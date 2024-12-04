@@ -6,6 +6,7 @@ const HamburgerCard = ({ burger, addToCart}) => {
 
   const handleAddToCart = () => {
     addToCart(burger)
+    localStorage.setItem('cart', JSON.stringify([burger]));
   }
 
 

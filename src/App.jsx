@@ -9,6 +9,7 @@ import Combos from './pages/Combos/Combos';
 import Drinks from './pages/Drinks/Drinks';
 import Dashboard from './pages/Dashboard/Dashboard';
 import Cart from './pages/Cart/Cart';
+import Checkout from './pages/Checkout/Checkout';
 
 function App() {
 
@@ -25,6 +26,7 @@ function App() {
             <Route path='/bebidas' element={<Drinks />} />
             <Route path='/dashboard' element={<Dashboard />} />
             <Route path='/cart' element={<Cart />} />
+            <Route path='/order' element={<Checkout />} />
           </Routes>
         </div>
         <Footer />

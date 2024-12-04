@@ -32,6 +32,7 @@ const Cart = () => {
     return cart.reduce((total, item) => total + item.price, 0).toFixed(2);
   };
 
+
   return (
     <div className="p-6">
       <h2 className="text-2xl font-semibold mb-6">Carrinho de Compras</h2>
@@ -52,7 +53,7 @@ const Cart = () => {
 
           <div className="mt-6 flex flex-col sm:flex-row sm:justify-between items-center">
             <Link
-              to="/checkout"
+              to="/order"
               className="bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-400 mb-4 sm:mb-0"
             >
               Finalizar Compra

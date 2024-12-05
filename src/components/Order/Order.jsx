@@ -1,51 +1,63 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Hook de navegação
+import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import generateNotaFiscal from '../../utils/gerenateNotaFiscal';
+
+// Definindo o esquema de validação com Zod
+const orderSchema = z.object({
+  nome: z.string().min(1, 'Campo Nome é obrigatório'),
+  sobrenome: z.string().min(1, 'Campo Sobrenome é obrigatório'),
+  endereco: z.string().min(1, 'Campo Endereço é obrigatório'),
+  bairro: z.string().min(1, 'Campo Bairro é obrigatório'),
+  cep: z.string().min(1, 'Campo Cep é obrigatório'),
+  pagamento: z.string().min(1, 'Escolha uma forma de pagamento'), // Validação para radio
+  modoEntrega: z.string().min(1, 'Escolha um modo de entrega'), // Validação para radio
+});
 
 const Order = () => {
-  const [nome, setNome] = useState('');
-  const [sobrenome, setSobrenome] = useState('');
-  const [endereco, setEndereco] = useState('');
-  const [bairro, setBairro] = useState('');
-  const [cep, setCep] = useState('');
-  const [pagamento, setPagamento] = useState('cartao');
-  const [modoEntrega, setModoEntrega] = useState('balcao'); // Retirada no balcão ou Delivery
   const [notificacao, setNotificacao] = useState('');
-  
-  const [taxaEntrega, setTaxaEntrega] = useState(0); // Taxa de entrega
-  const [valorTotal, setValorTotal] = useState(50); // Valor total do pedido (Exemplo)
+  const [taxaEntrega, setTaxaEntrega] = useState(0);
+  const orderLocalHistorage = JSON.parse(localStorage.getItem('cart'));
+  const navigate = useNavigate();
 
-  const navigate = useNavigate(); // Função para navegação
-
-  // Função para calcular a taxa de entrega dependendo do modo de entrega
+  // Função para calcular a taxa de entrega com base no modo de entrega
   const handleModoEntregaChange = (modo) => {
-    setModoEntrega(modo);
     if (modo === 'delivery') {
-      setTaxaEntrega(5); // Exemplo de taxa fixa para delivery
+      setTaxaEntrega(5); // Se for delivery, a taxa é R$5
     } else {
-      setTaxaEntrega(0); // Sem taxa para retirada no balcão
+      setTaxaEntrega(0); // Se for balcão, não há taxa
     }
   };
 
-  // Função para gerar o link do WhatsApp com todas as informações do pedido
-  const generateWhatsappLink = () => {
-    const numeroWhatsapp = "5521981752434"; // Substitua pelo número da sua hamburgueria (incluindo o código do país)
-    
-    const mensagem = `
-      Pedido de ${nome} ${sobrenome}:
-      Endereço: ${endereco}, ${bairro}, ${cep}
-      Forma de Pagamento: ${pagamento === 'cartao' ? 'Cartão' : 'Pix'}
-      Modo de Entrega: ${modoEntrega === 'balcao' ? 'Retirada no Balcão' : 'Delivery'}
-      Taxa de Entrega: R$${taxaEntrega.toFixed(2)}
-      Valor Total: R$${(valorTotal + taxaEntrega).toFixed(2)}
-    `;
+  // Gerar o link do WhatsApp com os dados do pedido
+  const generateWhatsappLink = (data) => {
+    const numeroWhatsapp = "5521981752434"; // Número de WhatsApp
+
+    const mensagem = generateNotaFiscal(
+      data.nome,
+      data.sobrenome,
+      data.endereco,
+      data.bairro,
+      data.cep,
+      data.pagamento,
+      data.modoEntrega,
+      taxaEntrega,
+      orderLocalHistorage
+    );
 
     const mensagemUrlEncode = encodeURIComponent(mensagem.trim());
     return `https://wa.me/${numeroWhatsapp}?text=${mensagemUrlEncode}`;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const orderLink = generateWhatsappLink();
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(orderSchema),
+  });
+
+  const onSubmit = (data) => {
+    const orderLink = generateWhatsappLink(data);
+    alert("Pedido enviado com sucesso!");
     setNotificacao(
       <>
         Seu pedido foi enviado! Agora é só aguardar que iremos avisar quando estiver pronto. <br />
@@ -57,7 +69,7 @@ const Order = () => {
   };
 
   const handleBack = () => {
-    navigate(-1); // Retorna à página anterior
+    navigate(-1);
   };
 
   return (
@@ -71,32 +83,30 @@ const Order = () => {
         </button>
 
         <h2 className="text-2xl font-semibold text-center mb-6">Finalizar Pedido</h2>
-        
-        <form onSubmit={handleSubmit}>
+
+        <form onSubmit={handleSubmit(onSubmit)}>
           {/* Campo de nome */}
           <div className="mb-4">
             <label className="block text-gray-700" htmlFor="nome">Nome</label>
             <input
               type="text"
               id="nome"
+              {...register('nome')}  // Registrando o campo de nome
               className="w-full p-2 border border-gray-300 rounded-md mt-2"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              required
             />
+            {errors.nome && <span className="text-red-600">{errors.nome.message}</span>}
           </div>
-          
+
           {/* Campo de sobrenome */}
           <div className="mb-4">
             <label className="block text-gray-700" htmlFor="sobrenome">Sobrenome</label>
             <input
               type="text"
               id="sobrenome"
+              {...register('sobrenome')}  // Registrando o campo de sobrenome
               className="w-full p-2 border border-gray-300 rounded-md mt-2"
-              value={sobrenome}
-              onChange={(e) => setSobrenome(e.target.value)}
-              required
             />
+            {errors.sobrenome && <span className="text-red-600">{errors.sobrenome.message}</span>}
           </div>
 
           {/* Campos de endereço */}
@@ -105,11 +115,10 @@ const Order = () => {
             <input
               type="text"
               id="endereco"
+              {...register('endereco')}  // Registrando o campo de endereço
               className="w-full p-2 border border-gray-300 rounded-md mt-2"
-              value={endereco}
-              onChange={(e) => setEndereco(e.target.value)}
-              required
             />
+            {errors.endereco && <span className="text-red-600">{errors.endereco.message}</span>}
           </div>
 
           <div className="mb-4">
@@ -117,11 +126,10 @@ const Order = () => {
             <input
               type="text"
               id="bairro"
+              {...register('bairro')}  // Registrando o campo de bairro
               className="w-full p-2 border border-gray-300 rounded-md mt-2"
-              value={bairro}
-              onChange={(e) => setBairro(e.target.value)}
-              required
             />
+            {errors.bairro && <span className="text-red-600">{errors.bairro.message}</span>}
           </div>
 
           <div className="mb-4">
@@ -129,11 +137,10 @@ const Order = () => {
             <input
               type="text"
               id="cep"
+              {...register('cep')}  // Registrando o campo de cep
               className="w-full p-2 border border-gray-300 rounded-md mt-2"
-              value={cep}
-              onChange={(e) => setCep(e.target.value)}
-              required
             />
+            {errors.cep && <span className="text-red-600">{errors.cep.message}</span>}
           </div>
 
           {/* Forma de pagamento */}
@@ -144,23 +151,20 @@ const Order = () => {
               <input
                 type="radio"
                 id="cartao"
-                name="pagamento"
+                {...register('pagamento')}
                 value="cartao"
-                checked={pagamento === 'cartao'}
-                onChange={() => setPagamento('cartao')}
                 className="mr-2"
               />
               <label htmlFor="pix" className="mr-4">Pix</label>
               <input
                 type="radio"
                 id="pix"
-                name="pagamento"
+                {...register('pagamento')}
                 value="pix"
-                checked={pagamento === 'pix'}
-                onChange={() => setPagamento('pix')}
                 className="mr-2"
               />
             </div>
+            {errors.pagamento && <span className="text-red-600">{errors.pagamento.message}</span>}
           </div>
 
           {/* Opção de entrega */}
@@ -171,27 +175,26 @@ const Order = () => {
               <input
                 type="radio"
                 id="balcao"
-                name="modoEntrega"
+                {...register('modoEntrega')}
                 value="balcao"
-                checked={modoEntrega === 'balcao'}
-                onChange={() => handleModoEntregaChange('balcao')}
                 className="mr-2"
+                onChange={() => handleModoEntregaChange('balcao')}
               />
               <label htmlFor="delivery" className="mr-4">Delivery</label>
               <input
                 type="radio"
                 id="delivery"
-                name="modoEntrega"
+                {...register('modoEntrega')}
                 value="delivery"
-                checked={modoEntrega === 'delivery'}
-                onChange={() => handleModoEntregaChange('delivery')}
                 className="mr-2"
+                onChange={() => handleModoEntregaChange('delivery')}
               />
             </div>
+            {errors.modoEntrega && <span className="text-red-600">{errors.modoEntrega.message}</span>}
           </div>
 
           {/* Exibindo a taxa de entrega, se for delivery */}
-          {modoEntrega === 'delivery' && (
+          {taxaEntrega > 0 && (
             <div className="mb-4">
               <p className="text-gray-700">Taxa de Entrega: R${taxaEntrega.toFixed(2)}</p>
             </div>

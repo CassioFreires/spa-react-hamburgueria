@@ -7,7 +7,9 @@ import { Link } from "react-router-dom";
 const Hamburguers = () => {
 
     const [cart, setCart] = useState([]);
-    const [isAdded, setIsAdded] = useState(null)
+    const [isAdded, setIsAdded] = useState(null);
+    const cartLocalStorage = JSON.parse(localStorage.getItem('cart'));
+    console.log(cartLocalStorage)
 
     const addToCart = () => {
         setCart((prevCart) => [...prevCart, burgers]);
@@ -22,7 +24,7 @@ const Hamburguers = () => {
         <>   {/* Link para visualizar o carrinho */}
             <div className="mt-4 text-center">
                 <Link to="/cart" className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-400">
-                    Ver Carrinho ({cart.length})
+                    Ver Carrinho ({cartLocalStorage.length})
                 </Link>
             </div>
             {isAdded && (

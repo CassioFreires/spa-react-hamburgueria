@@ -8,7 +8,7 @@ const Hamburguers = () => {
 
     const [cart, setCart] = useState([]);
     const [isAdded, setIsAdded] = useState(null);
-    const cartLocalStorage = JSON.parse(localStorage.getItem('cart'));
+    const cartLocalStorage = JSON.parse(localStorage.getItem('cart')) || [];
     console.log(cartLocalStorage)
 
     const addToCart = () => {

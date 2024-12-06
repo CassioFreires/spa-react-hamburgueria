@@ -23,6 +23,7 @@ const Order = () => {
   // Carregando ambos os carrinhos do localStorage
   const orderLocalHistorage = JSON.parse(localStorage.getItem('cart')) || [];
   const orderPromotionBurger = JSON.parse(localStorage.getItem('promotionBurger')) || [];
+  const orderComboBurger = JSON.parse(localStorage.getItem('comboBurger')) || [];
 
   const navigate = useNavigate();
 
@@ -49,7 +50,8 @@ const Order = () => {
       data.modoEntrega,
       taxaEntrega,
       orderLocalHistorage,  // Carrinho de hambúrgueres
-      orderPromotionBurger  // Carrinho de promoções
+      orderPromotionBurger,  // Carrinho de promoções
+      orderComboBurger
     );
 
     const mensagemUrlEncode = encodeURIComponent(mensagem.trim());

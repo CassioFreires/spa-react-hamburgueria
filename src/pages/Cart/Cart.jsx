@@ -10,9 +10,10 @@ const Cart = () => {
     // Carregar os carrinhos de hambúrgueres e promoções do localStorage
     const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
     const savedPromotionBurger = JSON.parse(localStorage.getItem('promotionBurger')) || [];
+    const saveComboBurger = JSON.parse(localStorage.getItem('comboBurger')) || [];
 
     // Combinar os dois carrinhos em um único array
-    const combinedCart = [...savedCart, ...savedPromotionBurger];
+    const combinedCart = [...savedCart, ...savedPromotionBurger, ...saveComboBurger];
     setCart(combinedCart);
   }, []);
 
@@ -27,12 +28,16 @@ const Cart = () => {
     } else if (cartType === 'promotions') {
       updatedCart = JSON.parse(localStorage.getItem('promotionBurger')).filter(item => item.id !== id);
       localStorage.setItem('promotionBurger', JSON.stringify(updatedCart));  // Atualiza o carrinho de promoções
+    } else if(cartType === 'combo') {
+      updatedCart = JSON.parse(localStorage.getItem('comboBurger')).filter(item => item.id !== id);
+      localStorage.setItem('comboBurger', JSON.stringify(updatedCart));  // Atualiza o carrinho de promoções
     }
 
     // Atualizar o estado após a remoção
     const updatedCombinedCart = [
       ...JSON.parse(localStorage.getItem('cart')) || [],
-      ...JSON.parse(localStorage.getItem('promotionBurger')) || []
+      ...JSON.parse(localStorage.getItem('promotionBurger')) || [],
+      ...JSON.parse(localStorage.getItem('comboBurger')) || []
     ];
     setCart(updatedCombinedCart); // Atualiza o estado com a nova lista
   };
@@ -44,6 +49,7 @@ const Cart = () => {
       setCart([]); // Atualiza o estado para um carrinho vazio
       localStorage.setItem('cart', JSON.stringify([]));  // Limpa o carrinho de hambúrgueres
       localStorage.setItem('promotionBurger', JSON.stringify([]));  // Limpa o carrinho de promoções
+      localStorage.setItem('comboBurger', JSON.stringify([]));  // Limpa o carrinho de promoções
       navigate('/promocoes');  // Redireciona para a página de Promoções
     }
   };

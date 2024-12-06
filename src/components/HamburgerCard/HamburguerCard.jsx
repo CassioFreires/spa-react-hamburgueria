@@ -1,6 +1,3 @@
-import { useState } from 'react';
-import burgers from '../../services/dataHamburguers.js';
-
 const HamburgerCard = ({ burger, addToCart }) => {
 
   const handleAddToCart = () => {

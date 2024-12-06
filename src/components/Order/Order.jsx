@@ -19,7 +19,11 @@ const orderSchema = z.object({
 const Order = () => {
   const [notificacao, setNotificacao] = useState('');
   const [taxaEntrega, setTaxaEntrega] = useState(0);
-  const orderLocalHistorage = JSON.parse(localStorage.getItem('cart'));
+  
+  // Carregando ambos os carrinhos do localStorage
+  const orderLocalHistorage = JSON.parse(localStorage.getItem('cart')) || [];
+  const orderPromotionBurger = JSON.parse(localStorage.getItem('promotionBurger')) || [];
+
   const navigate = useNavigate();
 
   // Função para calcular a taxa de entrega com base no modo de entrega
@@ -44,7 +48,8 @@ const Order = () => {
       data.pagamento,
       data.modoEntrega,
       taxaEntrega,
-      orderLocalHistorage
+      orderLocalHistorage,  // Carrinho de hambúrgueres
+      orderPromotionBurger  // Carrinho de promoções
     );
 
     const mensagemUrlEncode = encodeURIComponent(mensagem.trim());

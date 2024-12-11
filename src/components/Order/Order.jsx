@@ -24,6 +24,7 @@ const Order = () => {
   const orderLocalHistorage = JSON.parse(localStorage.getItem('cart')) || [];
   const orderPromotionBurger = JSON.parse(localStorage.getItem('promotionBurger')) || [];
   const orderComboBurger = JSON.parse(localStorage.getItem('comboBurger')) || [];
+  const orderDrinks = JSON.parse(localStorage.getItem('drinks')) || [];
 
   const navigate = useNavigate();
 

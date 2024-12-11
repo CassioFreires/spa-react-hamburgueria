@@ -11,18 +11,19 @@ const Cart = () => {
     const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
     const savedPromotionBurger = JSON.parse(localStorage.getItem('promotionBurger')) || [];
     const saveComboBurger = JSON.parse(localStorage.getItem('comboBurger')) || [];
+    const savedDrinks = JSON.parse(localStorage.getItem('drinks')) || [];
 
     // Combinar os dois carrinhos em um único array
-    const combinedCart = [...savedCart, ...savedPromotionBurger, ...saveComboBurger];
+    const combinedCart = [...savedCart, ...savedPromotionBurger, ...saveComboBurger, ...savedDrinks];
     setCart(combinedCart);
   }, []);
 
   const removeFromCart = (id, cartType) => {
+    console.log(cartType)
     let updatedCart;
-    
+
     // Atualizar o carrinho removendo o item com o id fornecido
     if (cartType === 'hamburgers') {
-      // Filtra o item a ser removido pelo id
       updatedCart = JSON.parse(localStorage.getItem('cart')).filter(item => item.id !== id);
       localStorage.setItem('cart', JSON.stringify(updatedCart));  // Atualiza o carrinho de hambúrgueres
     } else if (cartType === 'promotions') {
@@ -30,16 +31,22 @@ const Cart = () => {
       localStorage.setItem('promotionBurger', JSON.stringify(updatedCart));  // Atualiza o carrinho de promoções
     } else if(cartType === 'combo') {
       updatedCart = JSON.parse(localStorage.getItem('comboBurger')).filter(item => item.id !== id);
-      localStorage.setItem('comboBurger', JSON.stringify(updatedCart));  // Atualiza o carrinho de promoções
+      localStorage.setItem('comboBurger', JSON.stringify(updatedCart));  // Atualiza o carrinho de combos
+    } else if (cartType === 'drinks'){
+      updatedCart = JSON.parse(localStorage.getItem('drinks')).filter(item => item.id !== id);
+      localStorage.setItem('drinks', JSON.stringify(updatedCart));  // Atualiza o carrinho de bebidas
     }
 
-    // Atualizar o estado após a remoção
+    // Recarregar os carrinhos após a remoção e atualizar o estado
     const updatedCombinedCart = [
       ...JSON.parse(localStorage.getItem('cart')) || [],
       ...JSON.parse(localStorage.getItem('promotionBurger')) || [],
-      ...JSON.parse(localStorage.getItem('comboBurger')) || []
+      ...JSON.parse(localStorage.getItem('comboBurger')) || [],
+      ...JSON.parse(localStorage.getItem('drinks')) || []
     ];
-    setCart(updatedCombinedCart); // Atualiza o estado com a nova lista
+
+    // Atualizar o estado
+    setCart(updatedCombinedCart);
   };
 
   const removeAllFromCart = () => {
@@ -49,7 +56,8 @@ const Cart = () => {
       setCart([]); // Atualiza o estado para um carrinho vazio
       localStorage.setItem('cart', JSON.stringify([]));  // Limpa o carrinho de hambúrgueres
       localStorage.setItem('promotionBurger', JSON.stringify([]));  // Limpa o carrinho de promoções
-      localStorage.setItem('comboBurger', JSON.stringify([]));  // Limpa o carrinho de promoções
+      localStorage.setItem('comboBurger', JSON.stringify([]));  // Limpa o carrinho de combos
+      localStorage.setItem('drinks', JSON.stringify([])); // Limpa o carrinho de bebidas
       navigate('/promocoes');  // Redireciona para a página de Promoções
     }
   };

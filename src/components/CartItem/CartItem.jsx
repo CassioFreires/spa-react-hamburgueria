@@ -6,7 +6,7 @@ const CartItem = ({ item, removeFromCart, cartType }) => {
         <p>${item.price.toFixed(2)}</p>
       </div>
       <button
-        onClick={() => removeFromCart(item.id, cartType)} 
+        onClick={() => removeFromCart(item.id, item.cartType)} 
         className="text-red-500 hover:text-red-700"
       >
         Remover

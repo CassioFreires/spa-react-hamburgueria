@@ -9,10 +9,11 @@ const generateNotaFiscal = (
   taxaEntrega, 
   orderLocalHistorage,  // Carrinho de hambúrgueres
   orderPromotionBurger,
-  orderComboBurger  // Carrinho de promoções
+  orderComboBurger,
+  orderDrinks  // Carrinho de promoções
 ) => {
   // Combinação de ambos os carrinhos
-  const todosItens = [...orderLocalHistorage, ...orderPromotionBurger, ...orderComboBurger];
+  const todosItens = [...orderLocalHistorage, ...orderPromotionBurger, ...orderComboBurger, ...orderDrinks];
 
   // Criação do resumo dos itens
   const itensPedido = todosItens.map(item => {

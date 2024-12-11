@@ -11,9 +11,10 @@ const Combos = () => {
     const cartPromotionLocalStorage = JSON.parse(localStorage.getItem('promotionBurger')) || [];
     const cartLocalHistorage = JSON.parse(localStorage.getItem('cart')) || [];
     const cartComboBurgerLocalHistorage = JSON.parse(localStorage.getItem('comboBurger')) || [];
+    const cartDrinksLocalHistorage = JSON.parse(localStorage.getItem('drinks')) || [];
     
     // Combinando todos os itens do localStorage
-    const allItemsLocalHistorage = [...cartPromotionLocalStorage, ...cartLocalHistorage, ...cartComboBurgerLocalHistorage]; 
+    const allItemsLocalHistorage = [...cartPromotionLocalStorage, ...cartLocalHistorage, ...cartComboBurgerLocalHistorage, ...cartDrinksLocalHistorage]; 
 
     const addToCart = () => {
         // Atualizando o estado do carrinho

@@ -19,7 +19,6 @@ const Cart = () => {
   }, []);
 
   const removeFromCart = (id, cartType) => {
-    console.log(cartType)
     let updatedCart;
 
     // Atualizar o carrinho removendo o item com o id fornecido

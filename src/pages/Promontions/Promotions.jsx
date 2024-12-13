@@ -9,8 +9,9 @@ const Promotion = () => {
     const cartPromotionLocalStorage = JSON.parse(localStorage.getItem('promotionBurger')) || [];
     const cartLocalHistorage = JSON.parse(localStorage.getItem('cart')) || [];
     const cartComboBurgerLocalHistorage = JSON.parse(localStorage.getItem('comboBurger')) || [];
+    const cartDrinksLocalHistorage = JSON.parse(localStorage.getItem('drinks')) || [];
     
-    const allItemsLocalHistorage = [...cartPromotionLocalStorage, ...cartLocalHistorage, ...cartComboBurgerLocalHistorage]; // expalhando todos os itens do localhistorage
+    const allItemsLocalHistorage = [...cartPromotionLocalStorage, ...cartLocalHistorage, ...cartComboBurgerLocalHistorage, ...cartDrinksLocalHistorage]; // expalhando todos os itens do localhistorage
 
     const addToCart = () => {
         setCart((prevCart) => [...prevCart, dataPromotionBurgers]);

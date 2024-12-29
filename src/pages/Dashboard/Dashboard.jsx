@@ -70,9 +70,9 @@ const Dashboard = () => {
       ...pedido.itens.promocao,
       ...pedido.itens.combo,
       ...pedido.itens.bebidas
-    ].reduce((total, item) => total + item.price, 0);
+    ].reduce((total, item) => total + parseFloat(item.price), 0); // Garantir que item.price seja tratado como número
     
-    return totalItens + pedido.taxaEntrega;
+    return (totalItens + parseFloat(pedido.taxaEntrega)).toFixed(2); // Garantir que taxaEntrega seja tratada como número
   };
 
   return (
@@ -103,28 +103,24 @@ const Dashboard = () => {
                 <p><strong>Data:</strong> {date.toLocaleDateString()} - {`${hours}h:${min}m:${seg}s`}</p>
                 <p><strong>Modo de Entrega:</strong> {pedido.modoEntrega}</p>
                 <p><strong>Pagamento:</strong> {pedido.pagamento}</p>
-                <p><strong>Total:</strong> R${calcularTotal(pedido).toFixed(2)}</p>
+                <p><strong>Total:</strong> R${calcularTotal(pedido)}</p> {/* Total ajustado */}
               </div>
 
               <div className="flex flex-wrap gap-4">
                 <div className="w-full">
                   <h4 className="font-semibold text-gray-700">Itens:</h4>
                   {/* Combinando todos os itens de diferentes categorias */}
-                  {[
-                    ...pedido.itens.hamburgueres,
-                    ...pedido.itens.promocao,
-                    ...pedido.itens.combo,
-                    ...pedido.itens.bebidas
-                  ].map((item, index) => (
-                    <div key={index} className="flex items-center mb-2">
-                      <img
-                        src={item.imageUrl}
-                        alt={item.name}
-                        className="w-16 h-16 object-cover inline-block mr-2"
-                      />
-                      <span>{item.name} - R${item.price.toFixed(2)}</span>
-                    </div>
-                  ))}
+                  {[...pedido.itens.hamburgueres, ...pedido.itens.promocao, ...pedido.itens.combo, ...pedido.itens.bebidas]
+                    .map((item, index) => (
+                      <div key={index} className="flex items-center mb-2">
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="w-16 h-16 object-cover inline-block mr-2"
+                        />
+                        <span>{item.name} - R${parseFloat(item.price).toFixed(2)}</span> {/* Ajuste do preço de cada item */}
+                      </div>
+                    ))}
                 </div>
               </div>
 

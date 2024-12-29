@@ -7,36 +7,37 @@ const Cart = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Carregar os carrinhos de hambúrgueres e promoções do localStorage
+    // Carregar os carrinhos de hambúrgueres, promoções, combos e drinks do localStorage
     const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
     const savedPromotionBurger = JSON.parse(localStorage.getItem('promotionBurger')) || [];
-    const saveComboBurger = JSON.parse(localStorage.getItem('comboBurger')) || [];
+    const savedComboBurger = JSON.parse(localStorage.getItem('comboBurger')) || [];
     const savedDrinks = JSON.parse(localStorage.getItem('drinks')) || [];
 
-    // Combinar os dois carrinhos em um único array
-    const combinedCart = [...savedCart, ...savedPromotionBurger, ...saveComboBurger, ...savedDrinks];
-    setCart(combinedCart);
+    // Combine os carrinhos com informações adicionais sobre a origem dos dados
+    const combinedCart = [
+      ...savedCart.map(item => ({ ...item, cartSource: 'cart' })),
+      ...savedPromotionBurger.map(item => ({ ...item, cartSource: 'promotionBurger' })),
+      ...savedComboBurger.map(item => ({ ...item, cartSource: 'comboBurger' })),
+      ...savedDrinks.map(item => ({ ...item, cartSource: 'drinks' }))
+    ];
+
+    setCart(combinedCart); // Atualiza o estado do carrinho
   }, []);
 
-  const removeFromCart = (id, cartType) => {
+  const removeFromCart = (id, cartSource) => {
+    // Determinar qual carrinho foi passado e atualizar o localStorage correspondente
     let updatedCart;
+    const storageKey = cartSource === 'cart' ? 'cart' :
+                        cartSource === 'promotionBurger' ? 'promotionBurger' :
+                        cartSource === 'comboBurger' ? 'comboBurger' :
+                        cartSource === 'drinks' ? 'drinks' : '';
 
-    // Atualizar o carrinho removendo o item com o id fornecido
-    if (cartType === 'hamburgers') {
-      updatedCart = JSON.parse(localStorage.getItem('cart')).filter(item => item.id !== id);
-      localStorage.setItem('cart', JSON.stringify(updatedCart));  // Atualiza o carrinho de hambúrgueres
-    } else if (cartType === 'promotions') {
-      updatedCart = JSON.parse(localStorage.getItem('promotionBurger')).filter(item => item.id !== id);
-      localStorage.setItem('promotionBurger', JSON.stringify(updatedCart));  // Atualiza o carrinho de promoções
-    } else if(cartType === 'combo') {
-      updatedCart = JSON.parse(localStorage.getItem('comboBurger')).filter(item => item.id !== id);
-      localStorage.setItem('comboBurger', JSON.stringify(updatedCart));  // Atualiza o carrinho de combos
-    } else if (cartType === 'drinks'){
-      updatedCart = JSON.parse(localStorage.getItem('drinks')).filter(item => item.id !== id);
-      localStorage.setItem('drinks', JSON.stringify(updatedCart));  // Atualiza o carrinho de bebidas
+    if (storageKey) {
+      updatedCart = JSON.parse(localStorage.getItem(storageKey)).filter(item => item.id !== id);
+      localStorage.setItem(storageKey, JSON.stringify(updatedCart));  // Atualiza o localStorage do carrinho
     }
 
-    // Recarregar os carrinhos após a remoção e atualizar o estado
+    // Recarregar todos os carrinhos após a remoção e atualizar o estado
     const updatedCombinedCart = [
       ...JSON.parse(localStorage.getItem('cart')) || [],
       ...JSON.parse(localStorage.getItem('promotionBurger')) || [],
@@ -44,8 +45,7 @@ const Cart = () => {
       ...JSON.parse(localStorage.getItem('drinks')) || []
     ];
 
-    // Atualizar o estado
-    setCart(updatedCombinedCart);
+    setCart(updatedCombinedCart); // Atualiza o estado do carrinho com a nova lista
   };
 
   const removeAllFromCart = () => {
@@ -57,12 +57,12 @@ const Cart = () => {
       localStorage.setItem('promotionBurger', JSON.stringify([]));  // Limpa o carrinho de promoções
       localStorage.setItem('comboBurger', JSON.stringify([]));  // Limpa o carrinho de combos
       localStorage.setItem('drinks', JSON.stringify([])); // Limpa o carrinho de bebidas
-      navigate('/promocoes');  // Redireciona para a página de Promoções
+      navigate('/');  // Redireciona para a página inicial ou outra página desejada
     }
   };
 
   const getTotal = () => {
-    return cart.reduce((total, item) => total + item.price, 0).toFixed(2);
+    return cart.reduce((total, item) => total + parseFloat(item.price), 0);
   };
 
   return (
@@ -74,18 +74,23 @@ const Cart = () => {
       ) : (
         <>
           <div>
-            {cart.map((item) => (
-              <CartItem 
-                key={`${item.id}-${item.type}`} // Usando id e tipo para a chave única
-                item={item} 
-                removeFromCart={removeFromCart} 
-                cartType={item.type} // Passa o tipo de carrinho correto (hamburgers ou promotions)
-              />
-            ))}
+            {cart.map((item) => {
+              // Garantir uma chave única com a combinação de cartSource e id
+              const itemKey = `${item.cartSource}-${item.id}`;
+
+              return (
+                <CartItem
+                  key={itemKey}  // Usando a chave única
+                  item={item}
+                  removeFromCart={removeFromCart}
+                  cartSource={item.cartSource}  // Passando o cartSource ao invés de um tipo fixo
+                />
+              );
+            })}
           </div>
 
           <div className="mt-6 text-right">
-            <p className="text-xl font-semibold">Total: ${getTotal()}</p>
+            <p className="text-xl font-semibold">Total: ${getTotal().toFixed(2)}</p>
           </div>
 
           <div className="mt-6 flex flex-col sm:flex-row sm:justify-between items-center">

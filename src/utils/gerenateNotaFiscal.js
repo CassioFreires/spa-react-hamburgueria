@@ -17,12 +17,16 @@ const generateNotaFiscal = (
 
   // Criação do resumo dos itens
   const itensPedido = todosItens.map(item => {
-    return `- Nome do item: ${item.name}\n- Valor: R$${item.price.toFixed(2)}`;
+    return `- Nome do item: ${item.name}\n- Valor: R$${parseFloat(item.price).toFixed(2)}`; // Garantir que price seja um número
   }).join('\n');  // Junta os itens com uma quebra de linha
 
   // Cálculo do valor total do pedido
-  const valorTotalPedido = todosItens.reduce((total, item) => total + item.price, 0);
-  const valorTotalComTaxa = valorTotalPedido + taxaEntrega;
+  const valorTotalPedido = todosItens.reduce((total, item) => total + parseFloat(item.price), 0); // Garantir que price seja um número
+  const valorTotalComTaxa = valorTotalPedido + parseFloat(taxaEntrega); // Garantir que taxaEntrega seja um número
+
+  // Formatação dos valores para exibição com 2 casas decimais
+  const formattedTotalPedido = valorTotalPedido.toFixed(2);
+  const formattedTotalComTaxa = valorTotalComTaxa.toFixed(2);
 
   const mensagem = `
   ========== NOTA FISCAL ==========
@@ -43,14 +47,14 @@ const generateNotaFiscal = (
   *PEDIDO*
   Forma de Pagamento: ${pagamento === 'cartao' ? 'Cartão' : 'Pix'}
   Modo de Entrega: ${modoEntrega === 'balcao' ? 'Retirada no Balcão' : 'Delivery'}
-  Taxa de Entrega: R$${taxaEntrega.toFixed(2)}
+  Taxa de Entrega: R$${parseFloat(taxaEntrega).toFixed(2)}
 
   ----------------------------------
 
   *RESUMO DO PEDIDO*
   ${itensPedido}
-  Valor Total do Pedido: R$${valorTotalPedido.toFixed(2)}
-  Valor Total (com Taxa de Entrega): R$${valorTotalComTaxa.toFixed(2)}
+  Valor Total do Pedido: R$${formattedTotalPedido}
+  Valor Total (com Taxa de Entrega): R$${formattedTotalComTaxa}
 
   ----------------------------------
 

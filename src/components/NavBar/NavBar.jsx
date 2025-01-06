@@ -22,7 +22,12 @@ const Navbar = () => {
           <Link to="/combos" className="text-white hover:text-yellow-400">Combos</Link>
           <Link to="/bebidas" className="text-white hover:text-yellow-400">Bebidas</Link>
           <Link to="/dashboard" className="text-white hover:text-yellow-400">Dashboard</Link>
+          <div>
+            <Link to="/login" className="text-white hover:text-yellow-400">Entrar</Link>
+          </div>
         </div>
+
+
 
         {/* Ícone de hambúrguer para telas pequenas */}
         <div className="md:hidden">
@@ -42,6 +47,7 @@ const Navbar = () => {
         <Link to="/combos" className="block hover:text-yellow-400">Combos</Link>
         <Link to="/bebidas" className="block hover:text-yellow-400">Bebidas</Link>
         <Link to="/dashboard" className="block hover:text-yellow-400">Dashboard</Link>
+        <Link to="/login" className="block hover:text-yellow-400">Entrar</Link>
       </div>
     </nav>
   );

@@ -1,3 +1,5 @@
+import imgBurger from '/images/hamburgers/hamburguer.jpg'
+
 const HamburgerCard = ({ burger, addToCart }) => {
   const handleAddToCart = () => {
     const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -13,7 +15,7 @@ const HamburgerCard = ({ burger, addToCart }) => {
         className="bg-white shadow-lg rounded-lg overflow-hidden transition-transform transform hover:scale-105"
       >
         <img
-          src={burger.image_url}
+          src={imgBurger}
           alt={burger.name}
           className="w-full h-48 object-cover"
         />

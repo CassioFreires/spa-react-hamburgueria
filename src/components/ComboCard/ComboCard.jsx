@@ -1,3 +1,5 @@
+import imgCombos from '/images/combos/combos.jpg';
+
 const ComboCard = ({ burger, addToCart }) => {
   const handleAddToCart = () => {
       const savedCart = JSON.parse(localStorage.getItem('comboBurger')) || [];
@@ -13,7 +15,7 @@ const ComboCard = ({ burger, addToCart }) => {
               className="bg-white shadow-lg rounded-lg overflow-hidden transition-transform transform hover:scale-105"
           >
               <img
-                  src={burger.imageUrl}
+                  src={imgCombos}
                   alt={burger.name}
                   className="w-full h-48 object-cover"
               />

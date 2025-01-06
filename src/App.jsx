@@ -10,6 +10,8 @@ import Drinks from './pages/Drinks/Drinks';
 import Dashboard from './pages/Dashboard/Dashboard';
 import Cart from './pages/Cart/Cart';
 import Checkout from './pages/Checkout/Checkout';
+import Login from './pages/Login/Login';
+import Register from './pages/Register/Register';
 
 function App() {
 
@@ -27,6 +29,8 @@ function App() {
             <Route path='/dashboard' element={<Dashboard />} />
             <Route path='/cart' element={<Cart />} />
             <Route path='/order' element={<Checkout />} />
+            <Route path='/login' element={<Login />} />
+            <Route path='/register' element={<Register />} />
           </Routes>
         </div>
         <Footer />

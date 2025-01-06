@@ -21,9 +21,9 @@ const Promotion = () => {
           ...promo,
           promotion_id: promo.promotion_id || `fallback-${Math.random()}-${index}` // Garantindo uma chave única
         }));
-
-        setPromotions(validData);
-        console.log(validData);  // Atualiza o estado com as promoções da API
+ 
+        setPromotions(validData); // Atualiza o estado com as promoções da API
+         
       } catch (error) {
         setError('Erro ao carregar as promoções');
       } finally {

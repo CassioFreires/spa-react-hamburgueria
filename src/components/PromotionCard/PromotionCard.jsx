@@ -1,4 +1,5 @@
 import React from 'react';
+import imgPromotion from '/images/promotions/promotion.jpg'
 
 const PromotionCard = ({ promotion, addToCart }) => {
   const handleAddToCart = () => {
@@ -24,7 +25,7 @@ const PromotionCard = ({ promotion, addToCart }) => {
   return (
     <div className="bg-white shadow-lg rounded-lg overflow-hidden transition-transform transform hover:scale-105">
       <img
-        src={promotion.imageUrl}
+        src={imgPromotion}
         alt={promotion.name}
         className="w-full h-48 object-cover"
       />

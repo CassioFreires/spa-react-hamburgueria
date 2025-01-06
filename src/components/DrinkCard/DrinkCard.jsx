@@ -1,3 +1,5 @@
+import imgDrinks from '/images/drinks/refri.jpg';
+
 const DrinkCard = ({ drink, addToCart }) => {
   const handleAddToCart = () => {
       const savedCart = JSON.parse(localStorage.getItem('drinks')) || [];
@@ -8,7 +10,7 @@ const DrinkCard = ({ drink, addToCart }) => {
 
   return (
       <div className="bg-white shadow-lg rounded-lg overflow-hidden transition-transform transform hover:scale-105">
-          <img src={drink.imageUrl} alt={drink.name} className="w-full h-48 object-cover" />
+          <img src={imgDrinks} alt={drink.name} className="w-full h-48 object-cover" />
           <div className="p-4">
               <h3 className="text-lg font-semibold text-gray-800">{drink.name}</h3>
               <p className="text-gray-500 mt-2">{`$${drink.price}`}</p>

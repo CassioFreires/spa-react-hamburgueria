@@ -19,7 +19,13 @@ const orderSchema = z.object({
 const Order = () => {
   const [notificacao, setNotificacao] = useState('');
   const [taxaEntrega, setTaxaEntrega] = useState(0);
-  const orderLocalHistorage = JSON.parse(localStorage.getItem('cart'));
+
+  // Carregando ambos os carrinhos do localStorage
+  const orderLocalHistorage = JSON.parse(localStorage.getItem('cart')) || [];
+  const orderPromotionBurger = JSON.parse(localStorage.getItem('promotionBurger')) || [];
+  const orderComboBurger = JSON.parse(localStorage.getItem('comboBurger')) || [];
+  const orderDrinks = JSON.parse(localStorage.getItem('drinks')) || [];
+
   const navigate = useNavigate();
 
   // Função para calcular a taxa de entrega com base no modo de entrega
@@ -44,7 +50,10 @@ const Order = () => {
       data.pagamento,
       data.modoEntrega,
       taxaEntrega,
-      orderLocalHistorage
+      orderLocalHistorage,  // Carrinho de hambúrgueres
+      orderPromotionBurger,  // Carrinho de promoções
+      orderComboBurger,
+      orderDrinks
     );
 
     const mensagemUrlEncode = encodeURIComponent(mensagem.trim());
@@ -57,6 +66,36 @@ const Order = () => {
 
   const onSubmit = (data) => {
     const orderLink = generateWhatsappLink(data);
+
+    // Criando um objeto do pedido
+    const pedido = {
+      id: new Date().getTime(),  // Gerando um ID único para o pedido (timestamp)
+      nome: data.nome,
+      sobrenome: data.sobrenome,
+      endereco: data.endereco,
+      bairro: data.bairro,
+      cep: data.cep,
+      pagamento: data.pagamento,
+      modoEntrega: data.modoEntrega,
+      taxaEntrega: taxaEntrega,
+      itens: {
+        hamburgueres: orderLocalHistorage,
+        promocao: orderPromotionBurger,
+        combo: orderComboBurger,
+        bebidas: orderDrinks,
+      },
+      status: "Solicitado",  // Status inicial do pedido
+    };
+
+    // Recuperando os pedidos existentes ou criando um array vazio
+    const pedidosExistentes = JSON.parse(localStorage.getItem('pedidos')) || [];
+
+    // Adicionando o novo pedido à lista
+    pedidosExistentes.push(pedido);
+
+    // Salvando a lista de pedidos de volta no localStorage
+    localStorage.setItem('pedidos', JSON.stringify(pedidosExistentes));
+
     alert("Pedido enviado com sucesso!");
     setNotificacao(
       <>

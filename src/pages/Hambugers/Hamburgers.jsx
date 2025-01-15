@@ -6,16 +6,13 @@ import { getAllHamburgers } from "../../services/service-hamburguers.js";
 const Hamburguers = () => {
     const [cart, setCart] = useState([]);
     const [isAdded, setIsAdded] = useState(null);
-<<<<<<< HEAD
-    const cartLocalStorage = JSON.parse(localStorage.getItem('cart')) || [];
-    console.log(cartLocalStorage)
-=======
+
+
     const [burgers, setBurgers] = useState([]);  // Estado para armazenar os hambúrgueres
     const cartLocalStorage = JSON.parse(localStorage.getItem('cart')) || [];
     const cartPromotionLocalStorage = JSON.parse(localStorage.getItem('promotionBurger')) || [];
     const cartComboBurgerLocalHistorage = JSON.parse(localStorage.getItem('comboBurger')) || [];
     const cartDrinksLocalHistorage = JSON.parse(localStorage.getItem('drinks')) || [];
->>>>>>> develop
 
     const allItemsLocalHistorage = [...cartLocalStorage, ...cartPromotionLocalStorage, ...cartComboBurgerLocalHistorage, ...cartDrinksLocalHistorage];
 

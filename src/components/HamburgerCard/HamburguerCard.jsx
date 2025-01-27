@@ -1,12 +1,11 @@
-import imgBurger from '/images/hamburgers/hamburguer.jpg'
+import { useCallback } from "react";
+import imgBurger from "/images/hamburgers/hamburguer.jpg";
 
 const HamburgerCard = ({ burger, addToCart }) => {
-  const handleAddToCart = () => {
-    const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
-    const updatedCart = [...savedCart, burger];
-    localStorage.setItem('cart', JSON.stringify(updatedCart));
-    addToCart(burger);  // Chama a função do componente pai
-  };
+  // Função de adição ao carrinho (não mexe diretamente no localStorage)
+  const handleAddToCart = useCallback(() => {
+    addToCart(burger);  // Chama a função passada pelo componente pai para atualizar o carrinho
+  }, [burger, addToCart]); // Dependência no burger e addToCart
 
   return (
     <div>

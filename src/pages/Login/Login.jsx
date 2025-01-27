@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { loginService } from '../../services/service-login';
 import NotificationLogin from '../../components/NotificationLogin/NotificationLogin';
-import { useNavigate } from 'react-router-dom';
+import { useUser } from '../../contexts/UserContext'; // Importe o contexto para usar setUserInfo
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -10,23 +10,23 @@ const Login = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
+  const { setUserInfo } = useUser(); // Aqui, consome o setUserInfo do contexto global
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    const response = await loginService(email, password_hash);
+    const response = await loginService(email, password_hash, setUserInfo); // Passa setUserInfo aqui
+    console.log(response)
 
     if (response.success) {
-      // Exibe a notificação de sucesso
       setSuccess(response.message);
       setTimeout(() => {
         setSuccess('');
-        navigate('/');
-      }, 3000);  // Limpa a mensagem após 3 segundos
+        navigate('/'); // Redireciona para a página principal após o login
+      }, 3000);
     } else {
-      // Exibe a notificação de erro
       setError(response.message);
-      setTimeout(() => setError(''), 3000);  // Limpa a mensagem após 3 segundos
+      setTimeout(() => setError(''), 3000);
     }
   };
 
@@ -35,7 +35,6 @@ const Login = () => {
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
         <h2 className="text-xl font-semibold text-[#1F2937] mb-4">Bem-vindo à Hamburgueria</h2>
         
-        {/* Exibindo as mensagens de sucesso ou erro */}
         {error && <NotificationLogin message={error} type="error" />}
         {success && <NotificationLogin message={success} type="success" />}
 

@@ -12,30 +12,38 @@ import Cart from './pages/Cart/Cart';
 import Checkout from './pages/Checkout/Checkout';
 import Login from './pages/Login/Login';
 import Register from './pages/Register/Register';
+import { UserProvider } from './contexts/UserContext';
+import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 
 function App() {
 
   return (
-    <Router>
-      <div className="App flex flex-col min-h-screen">
-        <NavBar />
-        <div className="container mx-auto p-4 flex-grow">
-          <Routes>
-            <Route path='/' element={<Home />} />
-            <Route path='/hamburgers' element={<Hamburguers />} />
-            <Route path='/promocoes' element={<Promotion />} />
-            <Route path='/combos' element={<Combos />} />
-            <Route path='/bebidas' element={<Drinks />} />
-            <Route path='/dashboard' element={<Dashboard />} />
-            <Route path='/cart' element={<Cart />} />
-            <Route path='/order' element={<Checkout />} />
-            <Route path='/login' element={<Login />} />
-            <Route path='/register' element={<Register />} />
-          </Routes>
+    <UserProvider> {/* Envolva a aplicação com o UserProvider */}
+      <Router>
+        <div className="App flex flex-col min-h-screen">
+          <NavBar />
+          <div className="container mx-auto p-4 flex-grow">
+            <Routes> {/* Barra de navegação, que poderá acessar o estado do usuário */}
+              <Route path='/' element={<Home />} />
+              <Route path='/hamburgers' element={<Hamburguers />} />
+              <Route path='/promocoes' element={<Promotion />} />
+              <Route path='/combos' element={<Combos />} />
+              <Route path='/bebidas' element={<Drinks />} />
+              <Route path='/cart' element={<Cart />} />
+              <Route path='/order' element={<Checkout />} />
+              <Route path='/login' element={<Login />} />
+              <Route path='/register' element={<Register />} />
+
+              {/* Rota protegida (somente usuários autenticados e com perfil adequado) */}
+              <Route element={<ProtectedRoute requiredRole={['Funcionário', 'Administrador']} />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+              </Route>
+            </Routes>
+          </div>
+          <Footer />
         </div>
-        <Footer />
-      </div>
-    </Router>
+      </Router>
+    </UserProvider>
   )
 }
 

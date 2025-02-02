@@ -45,8 +45,8 @@ const Navbar = () => {
           <Link to="/combos" className="text-white hover:text-yellow-400">Combos</Link>
           <Link to="/bebidas" className="text-white hover:text-yellow-400">Bebidas</Link>
           
-          {/* Mostrar Dashboard apenas se o usuário for autenticado e for funcionario ou administrador */}
-          {user && (user.name === 'Funcionário' || user.name === 'Administrador') && (
+          {/* Mostrar Dashboard apenas se o usuário for autenticado e for funcionario ou Admin */}
+          {user && (user.name === 'Funcionário' || user.name === 'Admin') && (
             <Link to="/dashboard" className="text-white hover:text-yellow-400">Dashboard</Link>
           )}
 
@@ -81,8 +81,8 @@ const Navbar = () => {
         <Link to="/combos" className="block hover:text-yellow-400">Combos</Link>
         <Link to="/bebidas" className="block hover:text-yellow-400">Bebidas</Link>
 
-        {/* Mostrar Dashboard apenas se o usuário for autenticado e for funcionario ou administrador */}
-        {user && (user.name === 'Funcionário' || user.name === 'Administrador') && (
+        {/* Mostrar Dashboard apenas se o usuário for autenticado e for funcionario ou Admin */}
+        {user && (user.name === 'Funcionário' || user.name === 'Admin') && (
           <Link to="/dashboard" className="block hover:text-yellow-400">Dashboard</Link>
           
         )}

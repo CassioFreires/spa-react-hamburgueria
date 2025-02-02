@@ -16,7 +16,6 @@ const Login = () => {
     e.preventDefault();
 
     const response = await loginService(email, password_hash, setUserInfo); // Passa setUserInfo aqui
-    console.log(response)
 
     if (response.success) {
       setSuccess(response.message);

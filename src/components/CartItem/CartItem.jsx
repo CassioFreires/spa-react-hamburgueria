@@ -1,7 +1,6 @@
 import React from 'react';
 
 const CartItem = ({ item, removeFromCart, cartSource }) => {
-  console.log(item)
   // Usando uma chave única baseada em id
   const itemId = item.id || `fallback-${Math.random()}`;
 

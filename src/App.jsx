@@ -35,7 +35,7 @@ function App() {
               <Route path='/register' element={<Register />} />
 
               {/* Rota protegida (somente usuários autenticados e com perfil adequado) */}
-              <Route element={<ProtectedRoute requiredRole={['Funcionário', 'Administrador']} />}>
+              <Route element={<ProtectedRoute requiredRole={['Funcionário', 'Admin']} />}>
                 <Route path="/dashboard" element={<Dashboard />} />
               </Route>
             </Routes>

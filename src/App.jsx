@@ -14,6 +14,7 @@ import Login from './pages/Login/Login';
 import Register from './pages/Register/Register';
 import { UserProvider } from './contexts/UserContext';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
+import Address from './pages/Address/Address';
 
 function App() {
 
@@ -37,6 +38,10 @@ function App() {
               {/* Rota protegida (somente usuários autenticados e com perfil adequado) */}
               <Route element={<ProtectedRoute requiredRole={['Funcionário', 'Admin']} />}>
                 <Route path="/dashboard" element={<Dashboard />} />
+              </Route>
+              {/* Rota protegida (somente usuários autenticados e com perfil adequado) */}
+              <Route element={<ProtectedRoute requiredRole={['Funcionário', 'Admin', 'Cliente']} />}>
+                <Route path="/address" element={<Address />} />
               </Route>
             </Routes>
           </div>

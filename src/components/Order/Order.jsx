@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import generateNotaFiscal from '../../utils/gerenateNotaFiscal';
+import { getAddressByUser } from '../../services/service-address';
 
 // Definindo o esquema de validação com Zod
 const orderSchema = z.object({
@@ -12,32 +13,54 @@ const orderSchema = z.object({
   endereco: z.string().min(1, 'Campo Endereço é obrigatório'),
   bairro: z.string().min(1, 'Campo Bairro é obrigatório'),
   cep: z.string().min(1, 'Campo Cep é obrigatório'),
-  pagamento: z.string().min(1, 'Escolha uma forma de pagamento'), // Validação para radio
-  modoEntrega: z.string().min(1, 'Escolha um modo de entrega'), // Validação para radio
+  pagamento: z.string().min(1, 'Escolha uma forma de pagamento'),
+  modoEntrega: z.string().min(1, 'Escolha um modo de entrega'),
 });
 
 const Order = () => {
   const [notificacao, setNotificacao] = useState('');
   const [taxaEntrega, setTaxaEntrega] = useState(0);
+  const [address, setAddress] = useState(null);
+  const [modoEntregaSelecionado, setModoEntregaSelecionado] = useState('');
 
-  // Carregando ambos os carrinhos do localStorage
+  const navigate = useNavigate();
+  const authToken = localStorage.getItem('authToken');
+
+  // Carregando os carrinhos do localStorage
   const orderLocalHistorage = JSON.parse(localStorage.getItem('cart')) || [];
   const orderPromotionBurger = JSON.parse(localStorage.getItem('promotionBurger')) || [];
   const orderComboBurger = JSON.parse(localStorage.getItem('comboBurger')) || [];
   const orderDrinks = JSON.parse(localStorage.getItem('drinks')) || [];
 
-  const navigate = useNavigate();
+  // Função para carregar o endereço do usuário
+  const fetchAddress = async () => {
+    const addressData = await getAddressByUser(authToken);
+    setAddress(addressData);
+  };
 
-  // Função para calcular a taxa de entrega com base no modo de entrega
+  useEffect(() => {
+    if (authToken) {
+      console.log(address)
+      fetchAddress();
+    }
+  }, [authToken]);
+
+  // Função para lidar com a mudança no modo de entrega
   const handleModoEntregaChange = (modo) => {
+    setModoEntregaSelecionado(modo);
     if (modo === 'delivery') {
-      setTaxaEntrega(5); // Se for delivery, a taxa é R$5
+      if (!address) {
+        // Se não houver endereço, redireciona para a página de cadastro de endereço
+        navigate('/address');
+      } else {
+        setTaxaEntrega(5); // Define a taxa de entrega para R$5
+      }
     } else {
-      setTaxaEntrega(0); // Se for balcão, não há taxa
+      setTaxaEntrega(0); // Não há taxa para retirada no balcão
     }
   };
 
-  // Gerar o link do WhatsApp com os dados do pedido
+  // Função para gerar o link do WhatsApp
   const generateWhatsappLink = (data) => {
     const numeroWhatsapp = "5521981752434"; // Número de WhatsApp
 
@@ -50,8 +73,8 @@ const Order = () => {
       data.pagamento,
       data.modoEntrega,
       taxaEntrega,
-      orderLocalHistorage,  // Carrinho de hambúrgueres
-      orderPromotionBurger,  // Carrinho de promoções
+      orderLocalHistorage,
+      orderPromotionBurger,
       orderComboBurger,
       orderDrinks
     );
@@ -64,12 +87,17 @@ const Order = () => {
     resolver: zodResolver(orderSchema),
   });
 
+  // Função para enviar o pedido
   const onSubmit = (data) => {
+    if (modoEntregaSelecionado === 'delivery' && !address) {
+      alert("Por favor, cadastre um endereço antes de prosseguir.");
+      return;
+    }
+
     const orderLink = generateWhatsappLink(data);
 
-    // Criando um objeto do pedido
     const pedido = {
-      id: new Date().getTime(),  // Gerando um ID único para o pedido (timestamp)
+      id: new Date().getTime(),
       nome: data.nome,
       sobrenome: data.sobrenome,
       endereco: data.endereco,
@@ -84,16 +112,11 @@ const Order = () => {
         combo: orderComboBurger,
         bebidas: orderDrinks,
       },
-      status: "Solicitado",  // Status inicial do pedido
+      status: "Solicitado",
     };
 
-    // Recuperando os pedidos existentes ou criando um array vazio
     const pedidosExistentes = JSON.parse(localStorage.getItem('pedidos')) || [];
-
-    // Adicionando o novo pedido à lista
     pedidosExistentes.push(pedido);
-
-    // Salvando a lista de pedidos de volta no localStorage
     localStorage.setItem('pedidos', JSON.stringify(pedidosExistentes));
 
     alert("Pedido enviado com sucesso!");
@@ -107,6 +130,7 @@ const Order = () => {
     );
   };
 
+  // Função para voltar à página anterior
   const handleBack = () => {
     navigate(-1);
   };
@@ -130,56 +154,10 @@ const Order = () => {
             <input
               type="text"
               id="nome"
-              {...register('nome')}  // Registrando o campo de nome
+              {...register('nome')}
               className="w-full p-2 border border-gray-300 rounded-md mt-2"
             />
             {errors.nome && <span className="text-red-600">{errors.nome.message}</span>}
-          </div>
-
-          {/* Campo de sobrenome */}
-          <div className="mb-4">
-            <label className="block text-gray-700" htmlFor="sobrenome">Sobrenome</label>
-            <input
-              type="text"
-              id="sobrenome"
-              {...register('sobrenome')}  // Registrando o campo de sobrenome
-              className="w-full p-2 border border-gray-300 rounded-md mt-2"
-            />
-            {errors.sobrenome && <span className="text-red-600">{errors.sobrenome.message}</span>}
-          </div>
-
-          {/* Campos de endereço */}
-          <div className="mb-4">
-            <label className="block text-gray-700" htmlFor="endereco">Endereço</label>
-            <input
-              type="text"
-              id="endereco"
-              {...register('endereco')}  // Registrando o campo de endereço
-              className="w-full p-2 border border-gray-300 rounded-md mt-2"
-            />
-            {errors.endereco && <span className="text-red-600">{errors.endereco.message}</span>}
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700" htmlFor="bairro">Bairro</label>
-            <input
-              type="text"
-              id="bairro"
-              {...register('bairro')}  // Registrando o campo de bairro
-              className="w-full p-2 border border-gray-300 rounded-md mt-2"
-            />
-            {errors.bairro && <span className="text-red-600">{errors.bairro.message}</span>}
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700" htmlFor="cep">CEP</label>
-            <input
-              type="text"
-              id="cep"
-              {...register('cep')}  // Registrando o campo de cep
-              className="w-full p-2 border border-gray-300 rounded-md mt-2"
-            />
-            {errors.cep && <span className="text-red-600">{errors.cep.message}</span>}
           </div>
 
           {/* Forma de pagamento */}
@@ -218,6 +196,7 @@ const Order = () => {
                 value="balcao"
                 className="mr-2"
                 onChange={() => handleModoEntregaChange('balcao')}
+                checked={modoEntregaSelecionado === 'balcao'}
               />
               <label htmlFor="delivery" className="mr-4">Delivery</label>
               <input
@@ -227,15 +206,55 @@ const Order = () => {
                 value="delivery"
                 className="mr-2"
                 onChange={() => handleModoEntregaChange('delivery')}
+                checked={modoEntregaSelecionado === 'delivery'}
               />
             </div>
-            {errors.modoEntrega && <span className="text-red-600">{errors.modoEntrega.message}</span>}
+            {modoEntregaSelecionado === 'delivery' && !address && (
+              <p
+                className="text-blue-600 cursor-pointer mt-1"
+                onClick={() => navigate('/address')}
+              >
+                Você não possui um endereço cadastrado. Clique aqui para cadastrar.
+              </p>
+            )}
           </div>
 
           {/* Exibindo a taxa de entrega, se for delivery */}
           {taxaEntrega > 0 && (
             <div className="mb-4">
               <p className="text-gray-700">Taxa de Entrega: R${taxaEntrega.toFixed(2)}</p>
+            </div>
+          )}
+
+          {/* Exibindo o endereço cadastrado, se houver */}
+          {address && modoEntregaSelecionado === 'delivery' && (
+            <div className="mb-4">
+              <label className="block text-gray-700">Endereço cadastrado</label>
+              <div>
+                <p>{address.street}, {address.number} - {address.neighborhood}</p>
+                <p>{address.city} - {address.state}, {address.zip_code}</p>
+
+                {/* Botões Editar e Remover (só aparecem se houver endereço) */}
+                <div className="mt-4 flex justify-between items-center">
+                  <button
+                    onClick={() => navigate('/address/edit')}
+                    className="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  >
+                    Editar
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setAddress(null);
+                      setTaxaEntrega(0);
+                      setModoEntregaSelecionado('balcao'); // Muda para retirada no balcão ao remover o endereço
+                    }}
+                    className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    Remover
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 

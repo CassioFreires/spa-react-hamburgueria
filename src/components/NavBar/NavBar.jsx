@@ -28,6 +28,7 @@ const Navbar = () => {
 
   const handleLogout = () => {
     clearUser(); // Limpa o usuário no contexto global
+    localStorage.clear();
     navigate('/login'); // Redireciona para a página de login
   };
 

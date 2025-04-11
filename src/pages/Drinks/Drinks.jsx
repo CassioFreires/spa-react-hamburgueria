@@ -1,104 +1,121 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import DrinkCard from "../../components/DrinkCard/DrinkCard";
-import { getAllDrinks } from "../../services/service-drinks"; // Função para buscar as bebidas
-import { useUser } from "../../contexts/UserContext"; // Acesso ao contexto de usuário
+import { getAllDrinks } from "../../services/service-drinks";
+import { useUser } from "../../contexts/UserContext";
 import NotificationCartAuth from "../../components/NotificationCartAuth/NotificationCartAuth";
 
 const Drinks = () => {
-  const [drinks, setDrinks] = useState([]); // Estado para armazenar as bebidas
-  const [isAdded, setIsAdded] = useState(null); // Estado para notificação de item adicionado
-  const [loading, setLoading] = useState(true); // Estado para controlar o carregamento
-  const [error, setError] = useState(null); // Estado para controlar erros
-  const [notification, setNotification] = useState(null); // Estado para notificação
-  const { user } = useUser(); // Acessando o contexto de usuário
+  const [state, setState] = useState({
+    drinks: [],
+    isAdded: null,
+    notification: null,
+    cartItemCount: 0,
+    loading: true,
+    error: null,
+  });
+
+  const { user } = useUser();
   const navigate = useNavigate();
 
-  // Obtendo itens do localStorage
-  const cartPromotionLocalStorage = JSON.parse(localStorage.getItem("promotionBurger")) || [];
-  const cartLocalHistorage = JSON.parse(localStorage.getItem("cart")) || [];
-  const cartComboBurgerLocalHistorage = JSON.parse(localStorage.getItem("comboBurger")) || [];
-  const cartDrinksLocalHistorage = JSON.parse(localStorage.getItem("drinks")) || [];
-
-  // Combinando todos os itens do localStorage
-  const allItemsLocalHistorage = [
-    ...cartPromotionLocalStorage,
-    ...cartLocalHistorage,
-    ...cartComboBurgerLocalHistorage,
-    ...cartDrinksLocalHistorage,
-  ];
-
-  // Função para adicionar bebida ao carrinho
-  const addToCart = (drink) => {
-    if (!user) { // Verifica se o usuário está autenticado
-      setNotification({
-        message: "Você precisa estar logado para adicionar bebidas ao carrinho!",
-        type: "error",
-      });
-      setTimeout(() => setNotification(null), 4000); // Exibe a notificação por 4 segundos
-      setTimeout(() => navigate("/login"), 5000); // Redireciona para login após 5 segundos
-      return;
-    }
-
-    // Adiciona bebida ao carrinho no localStorage
-    const savedCart = JSON.parse(localStorage.getItem("drinks")) || [];
-    savedCart.push(drink);
-    localStorage.setItem("drinks", JSON.stringify(savedCart)); // Atualiza localStorage
-
-    setIsAdded(`${drink.name} adicionado ao carrinho!`);
-    setTimeout(() => setIsAdded(null), 2000); // Limpa a notificação após 2 segundos
+  // 🛠️ Função utilitária para buscar todos os itens do carrinho
+  const getCartItemsFromStorage = () => {
+    const cartPromotion = JSON.parse(localStorage.getItem("promotionBurger")) || [];
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const cartCombo = JSON.parse(localStorage.getItem("comboBurger")) || [];
+    const cartDrinks = JSON.parse(localStorage.getItem("drinks")) || [];
+    return [...cartPromotion, ...cart, ...cartCombo, ...cartDrinks];
   };
 
-  // Usando useEffect para buscar as bebidas da API
+  // 🔍 Carrega as bebidas da API
   useEffect(() => {
     const fetchDrinks = async () => {
       try {
         const data = await getAllDrinks();
-        if (data && Array.isArray(data)) {
-          setDrinks(data); // Atualiza o estado com as bebidas recebidas
+        if (Array.isArray(data)) {
+          setState((prevState) => ({
+            ...prevState,
+            drinks: data,
+            loading: false,
+          }));
         } else {
-          setError("Nenhuma bebida encontrada ou resposta inválida");
+          setState((prevState) => ({
+            ...prevState,
+            error: "Nenhuma bebida encontrada ou resposta inválida",
+            loading: false,
+          }));
         }
       } catch (error) {
-        setError("Erro ao carregar as bebidas");
-        console.error(error);
-      } finally {
-        setLoading(false); // Termina o carregamento
+        setState((prevState) => ({
+          ...prevState,
+          error: "Erro ao carregar as bebidas",
+          loading: false,
+        }));
       }
     };
 
     fetchDrinks();
-  }, []); // O efeito é executado uma única vez, quando o componente for montado
+  }, []);
 
-  // Exibe uma mensagem de carregamento ou erro
-  if (loading) {
-    return <div>Carregando...</div>;
-  }
+  // 🔍 Atualiza contagem total de itens no carrinho
+  useEffect(() => {
+    const allItems = getCartItemsFromStorage();
+    setState((prevState) => ({
+      ...prevState,
+      cartItemCount: allItems.length,
+    }));
+  }, []);
 
-  if (error) {
-    return <div>{error}</div>;
-  }
+  // 🛠️ Adiciona bebida ao carrinho
+  const addToCart = (drink) => {
+    if (!user) {
+      setState((prevState) => ({
+        ...prevState,
+        notification: {
+          message: "Você precisa estar logado para adicionar bebidas ao carrinho!",
+          type: "error",
+        },
+      }));
+      setTimeout(() => setState((prevState) => ({ ...prevState, notification: null })), 4000);
+      setTimeout(() => navigate("/login"), 5000);
+      return;
+    }
+
+    const savedCart = JSON.parse(localStorage.getItem("drinks")) || [];
+    savedCart.push(drink);
+    localStorage.setItem("drinks", JSON.stringify(savedCart));
+
+    // 🔍 Atualiza contagem de todos os itens no carrinho
+    const allItems = getCartItemsFromStorage();
+    setState((prevState) => ({
+      ...prevState,
+      cartItemCount: allItems.length,
+      isAdded: `${drink.name} adicionado ao carrinho!`,
+    }));
+
+    setTimeout(() => setState((prevState) => ({ ...prevState, isAdded: null })), 2000);
+  };
+
+  const { drinks, isAdded, loading, error, notification, cartItemCount } = state;
+
+  if (loading) return <div>Carregando...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <>
-      {/* Exibe a notificação de erro ou sucesso */}
       {notification && (
         <NotificationCartAuth
           message={notification.message}
           type={notification.type}
-          onClose={() => setNotification(null)}
+          onClose={() => setState((prevState) => ({ ...prevState, notification: null }))}
         />
       )}
 
-      {/* Link para visualizar o carrinho */}
+      {/* 🛒 Botão Ver Carrinho com contador atualizado */}
       <div className="mt-4 text-center">
         {user ? (
-          <Link
-            to="/cart"
-            className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-400"
-          >
-            Ver Carrinho ({allItemsLocalHistorage.length})
-            {console.log(allItemsLocalHistorage)}
+          <Link to="/cart" className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-400">
+            Ver Carrinho ({cartItemCount})
           </Link>
         ) : (
           <span className="bg-yellow-500 text-white p-2 rounded-md">
@@ -107,18 +124,17 @@ const Drinks = () => {
         )}
       </div>
 
-      {/* Exibe a notificação de item adicionado */}
-      {isAdded && <div className="text-green-500 text-center mt-2">{isAdded}</div>}
+      {isAdded && (
+        <div className="fixed top-10 left-1/2 transform -translate-x-1/2 bg-green-500 text-white p-3 rounded-lg shadow-lg z-50">
+          {isAdded}
+        </div>
+      )}
 
-      {/* Exibe as bebidas */}
+      {/* 🍹 Lista de bebidas */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-6">
-        {drinks && drinks.length > 0 ? (
-          drinks.map((drink) => (
-            <DrinkCard key={drink.drink_id} drink={drink} addToCart={addToCart} />
-          ))
-        ) : (
-          <div>Nenhuma bebida disponível no momento.</div>
-        )}
+        {drinks.map((drink) => (
+          <DrinkCard key={drink.drink_id} drink={drink} addToCart={addToCart} />
+        ))}
       </div>
     </>
   );

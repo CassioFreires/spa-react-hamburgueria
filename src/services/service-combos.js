@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 export async function getAllCombos() {
-    const url = 'http://localhost:3000/combos/getAll';
+    
+    const url = `${import.meta.env.VITE_BASE_URL_API}:${import.meta.env.VITE_API_PORT}/combos/getAll`;
     try {
         const response = await axios.get(url);
         // Garantir que a estrutura dos dados esteja correta

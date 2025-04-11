@@ -15,10 +15,26 @@ const Cart = () => {
 
     // Combine os carrinhos com informações adicionais sobre a origem dos dados
     const combinedCart = [
-      ...savedCart.map(item => ({ ...item, cartSource: 'cart' })),
-      ...savedPromotionBurger.map(item => ({ ...item, cartSource: 'promotionBurger' })),
-      ...savedComboBurger.map(item => ({ ...item, cartSource: 'comboBurger' })),
-      ...savedDrinks.map(item => ({ ...item, cartSource: 'drinks' }))
+      ...savedCart.map(item => ({
+        ...item,
+        cartSource: 'cart',
+        _uniqueId: `cart-${item.id || item.burger_id || item.name || Math.random()}`
+      })),
+      ...savedPromotionBurger.map(item => ({
+        ...item,
+        cartSource: 'promotionBurger',
+        _uniqueId: `promotionBurger-${item.id || item.promotion_id || item.name || Math.random()}`
+      })),
+      ...savedComboBurger.map(item => ({
+        ...item,
+        cartSource: 'comboBurger',
+        _uniqueId: `comboBurger-${item.id || item.combo_id || item.name || Math.random()}`
+      })),
+      ...savedDrinks.map(item => ({
+        ...item,
+        cartSource: 'drinks',
+        _uniqueId: `drinks-${item.id || item.drink_id || item.name || Math.random()}`
+      }))
     ];
 
     setCart(combinedCart); // Atualiza o estado do carrinho
@@ -33,16 +49,18 @@ const Cart = () => {
                         cartSource === 'drinks' ? 'drinks' : '';
 
     if (storageKey) {
-      updatedCart = JSON.parse(localStorage.getItem(storageKey)).filter(item => item.id !== id);
+      updatedCart = JSON.parse(localStorage.getItem(storageKey)).filter(item => 
+        item.id !== id && item.burger_id !== id && item.combo_id !== id && item.promotion_id !== id && item.drink_id !== id
+      );
       localStorage.setItem(storageKey, JSON.stringify(updatedCart));  // Atualiza o localStorage do carrinho
     }
 
     // Recarregar todos os carrinhos após a remoção e atualizar o estado
     const updatedCombinedCart = [
-      ...JSON.parse(localStorage.getItem('cart')) || [],
-      ...JSON.parse(localStorage.getItem('promotionBurger')) || [],
-      ...JSON.parse(localStorage.getItem('comboBurger')) || [],
-      ...JSON.parse(localStorage.getItem('drinks')) || []
+      ...JSON.parse(localStorage.getItem('cart') || "[]").map(item => ({ ...item, cartSource: 'cart', _uniqueId: `cart-${item.id || item.burger_id || item.name || Math.random()}` })),
+      ...JSON.parse(localStorage.getItem('promotionBurger') || "[]").map(item => ({ ...item, cartSource: 'promotionBurger', _uniqueId: `promotionBurger-${item.id || item.promotion_id || item.name || Math.random()}` })),
+      ...JSON.parse(localStorage.getItem('comboBurger') || "[]").map(item => ({ ...item, cartSource: 'comboBurger', _uniqueId: `comboBurger-${item.id || item.combo_id || item.name || Math.random()}` })),
+      ...JSON.parse(localStorage.getItem('drinks') || "[]").map(item => ({ ...item, cartSource: 'drinks', _uniqueId: `drinks-${item.id || item.drink_id || item.name || Math.random()}` }))
     ];
 
     setCart(updatedCombinedCart); // Atualiza o estado do carrinho com a nova lista
@@ -75,15 +93,12 @@ const Cart = () => {
         <>
           <div>
             {cart.map((item) => {
-              // Garantir uma chave única com a combinação de cartSource e id
-              const itemKey = `${item.cartSource}-${item.id}`;
-
               return (
                 <CartItem
-                  key={itemKey}  // Usando a chave única
+                  key={item._uniqueId}  // Usando a chave única
                   item={item}
                   removeFromCart={removeFromCart}
-                  cartSource={item.cartSource}  // Passando o cartSource ao invés de um tipo fixo
+                  cartSource={item.cartSource}
                 />
               );
             })}

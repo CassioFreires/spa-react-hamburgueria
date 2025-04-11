@@ -2,82 +2,99 @@ import { useState, useEffect } from "react";
 import HamburgerCard from "../../components/HamburgerCard/HamburguerCard";
 import { Link, useNavigate } from "react-router-dom";
 import { getAllHamburgers } from "../../services/service-hamburguers.js";
-import { useUser } from "../../contexts/UserContext"; // Contexto de usuário para verificar a autenticação
+import { useUser } from "../../contexts/UserContext"; 
 import NotificationCartAuth from "../../components/NotificationCartAuth/NotificationCartAuth.jsx";
 
+// Componente principal que exibe a lista de hambúrgueres
 const Hamburguers = () => {
-  const [burgers, setBurgers] = useState([]); // Estado para armazenar os hambúrgueres
-  const [isAdded, setIsAdded] = useState(null); // Estado para notificação de item adicionado
-  const [loading, setLoading] = useState(true); // Estado para controlar o carregamento
-  const [error, setError] = useState(null); // Estado para controlar erros
-  const [notification, setNotification] = useState(null); // Estado para notificação
-  const { user } = useUser(); // Acessando o contexto de usuário
-  const navigate = useNavigate();
+  
+  // Definindo o estado do componente
+  const [state, setState] = useState({
+    burgers: [], // Lista de hambúrgueres
+    isAdded: null, // Mensagem de notificação quando um hambúrguer for adicionado ao carrinho
+    loading: true, // Controla o estado de carregamento
+    error: null, // Controla erros durante a busca dos hambúrgueres
+    notification: null, // Controla a notificação de erro/sucesso
+  });
 
-  // Obtendo itens do localStorage
-  const cartPromotionLocalStorage = JSON.parse(localStorage.getItem("promotionBurger")) || [];
-  const cartLocalStorage = JSON.parse(localStorage.getItem("cart")) || [];
-  const cartComboBurgerLocalStorage = JSON.parse(localStorage.getItem("comboBurger")) || [];
-  const cartDrinksLocalStorage = JSON.parse(localStorage.getItem("drinks")) || [];
+  const { user } = useUser(); // Acessa o contexto de usuário para verificar se o usuário está autenticado
+  const navigate = useNavigate(); // Função de navegação para redirecionar o usuário
 
-  // Combinando todos os itens do localStorage
-  const allItemsLocalStorage = [
-    ...cartPromotionLocalStorage,
-    ...cartLocalStorage,
-    ...cartComboBurgerLocalStorage,
-    ...cartDrinksLocalStorage,
-  ];
+  // Buscando os itens do carrinho armazenados no localStorage
+  const getCartItemsFromStorage = () => {
+    const cartPromotion = JSON.parse(localStorage.getItem("promotionBurger")) || [];
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const cartCombo = JSON.parse(localStorage.getItem("comboBurger")) || [];
+    const cartDrinks = JSON.parse(localStorage.getItem("drinks")) || [];
+    return [...cartPromotion, ...cart, ...cartCombo, ...cartDrinks];
+  };
 
-  // Função para adicionar hambúrguer ao carrinho
+  const allItemsLocalStorage = getCartItemsFromStorage(); // Combina todos os itens do carrinho armazenados
+
+  // Função para adicionar um hambúrguer ao carrinho
   const addToCart = (burger) => {
-    if (!user) { // Verifica se o usuário está autenticado
-      setNotification({
-        message: "Você precisa estar logado para adicionar hambúrgueres ao carrinho!",
-        type: "error",
-      });
-      setTimeout(() => setNotification(null), 4000); // Exibe a notificação por 4 segundos
-      setTimeout(() => navigate("/login"), 5000); // Redireciona para login após 5 segundos
+    if (!user) {
+      // Se o usuário não estiver autenticado, exibe uma notificação de erro
+      showNotification("Você precisa estar logado para adicionar hambúrgueres ao carrinho!", "error");
+      setTimeout(() => navigate("/login"), 4000); // Redireciona para a tela de login após 4 segundos
       return;
     }
 
-    // Adiciona hambúrguer ao carrinho no localStorage
+    // Adiciona o hambúrguer ao carrinho no localStorage
     const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
     savedCart.push(burger);
-    localStorage.setItem("cart", JSON.stringify(savedCart)); // Atualiza localStorage
+    localStorage.setItem("cart", JSON.stringify(savedCart)); // Atualiza o carrinho no localStorage
 
-    setIsAdded(`${burger.name} adicionado ao carrinho!`);
-    setTimeout(() => setIsAdded(null), 2000); // Limpa a notificação após 2 segundos
+    // Exibe uma notificação de sucesso após a adição ao carrinho
+    showNotification(`${burger.name} adicionado ao carrinho!`, "success");
   };
 
-  // Usando useEffect para buscar os hambúrgueres da API
-  useEffect(() => {
-    const fetchBurgers = async () => {
-      try {
-        const data = await getAllHamburgers();
-        if (data && Array.isArray(data)) {
-          setBurgers(data); // Atualiza o estado com os hambúrgueres recebidos
-        } else {
-          setError("Nenhum hambúrguer encontrado ou resposta inválida");
-        }
-      } catch (error) {
-        setError("Erro ao carregar os hambúrgueres");
-        console.error(error);
-      } finally {
-        setLoading(false); // Termina o carregamento
+  // Função para exibir notificações
+  const showNotification = (message, type) => {
+    setState((prevState) => ({
+      ...prevState,
+      notification: { message, type },
+    }));
+    setTimeout(() => {
+      setState((prevState) => ({ ...prevState, notification: null })); // Remove a notificação após 4 segundos
+    }, 4000);
+  };
+
+  // Função para buscar os hambúrgueres da API
+  const fetchBurgers = async () => {
+    try {
+      const data = await getAllHamburgers();
+      if (Array.isArray(data)) {
+        setState((prevState) => ({ ...prevState, burgers: data, loading: false }));
+      } else {
+        setState((prevState) => ({
+          ...prevState,
+          error: "Nenhum hambúrguer encontrado ou resposta inválida",
+          loading: false,
+        }));
       }
-    };
+    } catch (error) {
+      setState((prevState) => ({
+        ...prevState,
+        error: "Erro ao carregar os hambúrgueres",
+        loading: false,
+      }));
+      console.error(error);
+    }
+  };
 
+  // Carrega os hambúrgueres quando o componente é montado
+  useEffect(() => {
     fetchBurgers();
-  }, []); // O efeito é executado uma única vez, quando o componente for montado
+  }, []);
 
-  // Exibe uma mensagem de carregamento ou erro
-  if (loading) {
-    return <div>Carregando...</div>;
-  }
+  const { burgers, isAdded, loading, error, notification } = state;
 
-  if (error) {
-    return <div>{error}</div>;
-  }
+  // Se estiver carregando, exibe uma mensagem de carregamento
+  if (loading) return <div>Carregando...</div>;
+
+  // Se houver um erro, exibe a mensagem de erro
+  if (error) return <div>{error}</div>;
 
   return (
     <>
@@ -86,32 +103,19 @@ const Hamburguers = () => {
         <NotificationCartAuth
           message={notification.message}
           type={notification.type}
-          onClose={() => setNotification(null)}
+          onClose={() => setState((prevState) => ({ ...prevState, notification: null }))}
         />
       )}
 
-      {/* Link para visualizar o carrinho */}
-      <div className="mt-4 text-center">
-        {user ? (
-          <Link
-            to="/cart"
-            className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-400"
-          >
-            Ver Carrinho ({allItemsLocalStorage.length})
-          </Link>
-        ) : (
-          <span className="bg-yellow-500 text-white p-2 rounded-md">
-            Você precisa estar logado para acessar o carrinho.
-          </span>
-        )}
-      </div>
+      {/* Exibe o link para visualizar o carrinho, ou uma mensagem informando que é necessário estar logado */}
+      <CartLink user={user} cartLength={allItemsLocalStorage.length} />
 
-      {/* Exibe a notificação de item adicionado */}
+      {/* Exibe a notificação de item adicionado ao carrinho */}
       {isAdded && <div className="text-green-500 text-center mt-2">{isAdded}</div>}
 
-      {/* Exibe os hambúrgueres */}
+      {/* Exibe os hambúrgueres em uma grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-6">
-        {burgers && burgers.length > 0 ? (
+        {burgers?.length ? (
           burgers.map((burger) => (
             <HamburgerCard key={burger.id} burger={burger} addToCart={addToCart} />
           ))
@@ -122,5 +126,20 @@ const Hamburguers = () => {
     </>
   );
 };
+
+// Componente reutilizável para o link do carrinho
+const CartLink = ({ user, cartLength }) => (
+  <div className="mt-4 text-center">
+    {user ? (
+      <Link to="/cart" className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-400">
+        Ver Carrinho ({cartLength})
+      </Link>
+    ) : (
+      <span className="bg-yellow-500 text-white p-2 rounded-md">
+        Você precisa estar logado para acessar o carrinho.
+      </span>
+    )}
+  </div>
+);
 
 export default Hamburguers;

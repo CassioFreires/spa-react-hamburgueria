@@ -1,81 +1,121 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import ComboCard from "../../components/ComboCard/ComboCard";
-import { getAllCombos } from "../../services/service-combos"; // Função para buscar os combos
-import { useUser } from "../../contexts/UserContext"; // Acesso ao contexto de usuário
+import { getAllCombos } from "../../services/service-combos";
+import { useUser } from "../../contexts/UserContext";
 import NotificationCartAuth from "../../components/NotificationCartAuth/NotificationCartAuth";
 
 const Combos = () => {
-  const [combos, setCombos] = useState([]); // Estado para armazenar os combos
-  const [isAdded, setIsAdded] = useState(null); // Estado para a notificação de item adicionado
-  const [notification, setNotification] = useState(null); // Estado para a notificação
-  const { user } = useUser(); // Acessa o usuário autenticado
+  const [state, setState] = useState({
+    combos: [],
+    isAdded: null,
+    notification: null,
+    cartItemCount: 0,
+    loading: true,
+    error: null,
+  });
+
+  const { user } = useUser();
   const navigate = useNavigate();
 
-  // Obtendo itens do localStorage, se existirem
-  const cartPromotionLocalStorage = JSON.parse(localStorage.getItem("promotionBurger")) || [];
-  const cartLocalHistorage = JSON.parse(localStorage.getItem("cart")) || [];
-  const cartComboBurgerLocalHistorage = JSON.parse(localStorage.getItem("comboBurger")) || [];
-  const cartDrinksLocalHistorage = JSON.parse(localStorage.getItem("drinks")) || [];
-
-  // Combinando todos os itens do localStorage
-  const allItemsLocalHistorage = [
-    ...cartPromotionLocalStorage,
-    ...cartLocalHistorage,
-    ...cartComboBurgerLocalHistorage,
-    ...cartDrinksLocalHistorage,
-  ];
-
-  // Função para adicionar ao carrinho
-  const addToCart = (combo) => {
-    if (!user) { // Verifica se o usuário está autenticado
-      setNotification({
-        message: "Você precisa estar logado para adicionar combos ao carrinho!",
-        type: "error",
-      });
-      setTimeout(() => setNotification(null), 4000); // Exibe a notificação por 4 segundos
-      setTimeout(() => navigate("/login"), 5000); // Redireciona para login após 5 segundos
-      return;
-    }
-
-    // Atualiza o estado do carrinho
-    const savedCart = JSON.parse(localStorage.getItem("comboBurger")) || [];
-    savedCart.push(combo);
-    localStorage.setItem("comboBurger", JSON.stringify(savedCart)); // Atualiza o localStorage
-
-    setIsAdded(`${combo.name} adicionado ao carrinho!`);
-    setTimeout(() => setIsAdded(null), 2000); // Limpa a notificação após 2 segundos
+  // 🛠️ Função utilitária para buscar todos os itens do carrinho
+  const getCartItemsFromStorage = () => {
+    const cartPromotion = JSON.parse(localStorage.getItem("promotionBurger")) || [];
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const cartCombo = JSON.parse(localStorage.getItem("comboBurger")) || [];
+    const cartDrinks = JSON.parse(localStorage.getItem("drinks")) || [];
+    return [...cartPromotion, ...cart, ...cartCombo, ...cartDrinks];
   };
 
-  // Usando useEffect para buscar os combos da API
+  // 🔍 Carrega combos da API
   useEffect(() => {
     const fetchCombos = async () => {
-      const data = await getAllCombos();
-      setCombos(data); // Atualiza o estado com os combos recebidos
+      try {
+        const data = await getAllCombos();
+        if (Array.isArray(data)) {
+          setState((prevState) => ({
+            ...prevState,
+            combos: data,
+            loading: false,
+          }));
+        } else {
+          setState((prevState) => ({
+            ...prevState,
+            error: "Nenhum combo encontrado ou resposta inválida",
+            loading: false,
+          }));
+        }
+      } catch (error) {
+        setState((prevState) => ({
+          ...prevState,
+          error: "Erro ao carregar os combos",
+          loading: false,
+        }));
+      }
     };
 
     fetchCombos();
-  }, []); // O efeito é executado uma única vez, quando o componente for montado
+  }, []);
+
+  // 🔍 Atualiza contagem total de itens no carrinho
+  useEffect(() => {
+    const allItems = getCartItemsFromStorage();
+    setState((prevState) => ({
+      ...prevState,
+      cartItemCount: allItems.length,
+    }));
+  }, []);
+
+  // 🛠️ Adiciona combo ao carrinho
+  const addToCart = (combo) => {
+    if (!user) {
+      setState((prevState) => ({
+        ...prevState,
+        notification: {
+          message: "Você precisa estar logado para adicionar combos ao carrinho!",
+          type: "error",
+        },
+      }));
+      setTimeout(() => setState((prevState) => ({ ...prevState, notification: null })), 4000);
+      setTimeout(() => navigate("/login"), 5000);
+      return;
+    }
+
+    const savedCart = JSON.parse(localStorage.getItem("comboBurger")) || [];
+    savedCart.push(combo);
+    localStorage.setItem("comboBurger", JSON.stringify(savedCart));
+
+    // 🔍 Atualiza contagem de todos os itens no carrinho
+    const allItems = getCartItemsFromStorage();
+    setState((prevState) => ({
+      ...prevState,
+      cartItemCount: allItems.length,
+      isAdded: `${combo.name} adicionado ao carrinho!`,
+    }));
+
+    setTimeout(() => setState((prevState) => ({ ...prevState, isAdded: null })), 2000);
+  };
+
+  const { combos, isAdded, loading, error, notification, cartItemCount } = state;
+
+  if (loading) return <div>Carregando...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <>
-      {/* Exibe a notificação de erro ou sucesso */}
       {notification && (
         <NotificationCartAuth
           message={notification.message}
           type={notification.type}
-          onClose={() => setNotification(null)}
+          onClose={() => setState((prevState) => ({ ...prevState, notification: null }))}
         />
       )}
 
-      {/* Link para visualizar o carrinho */}
+      {/* 🛒 Botão Ver Carrinho com contador atualizado */}
       <div className="mt-4 text-center">
         {user ? (
-          <Link
-            to="/cart"
-            className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-400"
-          >
-            Ver Carrinho ({allItemsLocalHistorage.length})
+          <Link to="/cart" className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-400">
+            Ver Carrinho ({cartItemCount})
           </Link>
         ) : (
           <span className="bg-yellow-500 text-white p-2 rounded-md">
@@ -84,13 +124,16 @@ const Combos = () => {
         )}
       </div>
 
-      {/* Exibe a notificação de item adicionado */}
-      {isAdded && <div className="text-green-500 text-center mt-2">{isAdded}</div>}
+      {isAdded && (
+        <div className="fixed top-10 left-1/2 transform -translate-x-1/2 bg-green-500 text-white p-3 rounded-lg shadow-lg z-50">
+          {isAdded}
+        </div>
+      )}
 
-      {/* Exibe os combos */}
+      {/* 🍔 Lista de combos */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-6">
         {combos.map((combo) => (
-          <ComboCard key={combo.combo_id} burger={combo} addToCart={addToCart} />
+          <ComboCard key={combo.combo_id} combo={combo} addToCart={addToCart} />
         ))}
       </div>
     </>

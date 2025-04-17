@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import Notification from '../../components/Notification/Notification';
 import StatusUpdatePopup from '../../components/StatusUpdatePopup/StatusUpdatePopup';
+import './Dashboard.css';
+import { deleteOrderService } from '../../services/service-order';
+
 import {
   getAllOrdersService,
   updateOrderStatusService,
@@ -36,6 +39,10 @@ const Dashboard = () => {
       await updateOrderStatusService(selectedOrder.order_id, newStatus, token);
       setNotification({ type: 'success', message: '✅ Status atualizado com sucesso!' });
 
+      setTimeout(() => {
+        setNotification(null);
+      }, 5000);
+
       setOrders((prev) =>
         prev.map((order) =>
           order.order_id === selectedOrder.order_id
@@ -49,22 +56,31 @@ const Dashboard = () => {
     }
   };
 
-  // const handleCancelOrder = async (orderId) => {
-  //   if (!window.confirm('Tem certeza que deseja cancelar este pedido?')) return;
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm('Tem certeza que deseja cancelar este pedido?')) return;
 
-  //   try {
-  //     await cancelOrderService(orderId, token);
-  //     setNotification({ type: 'success', message: '🚫 Pedido cancelado com sucesso.' });
+    try {
+      await deleteOrderService(orderId, token);
 
-  //     setOrders((prev) =>
-  //       prev.map((order) =>
-  //         order.order_id === orderId ? { ...order, status_do_pedido: 'CANCELADO' } : order
-  //       )
-  //     );
-  //   } catch (err) {
-  //     setNotification({ type: 'error', message: err.message || '❌ Erro ao cancelar pedido.' });
-  //   }
-  // };
+      setNotification({ type: 'success', message: '🚫 Pedido cancelado com sucesso.' });
+
+      // Oculta notificação após 5 segundos
+      setTimeout(() => {
+        setNotification(null);
+      }, 5000);
+
+      // Atualiza lista local, remove ou marca como cancelado
+      setOrders((prev) =>
+        prev.filter((order) => order.order_id !== orderId)
+      );
+
+    } catch (err) {
+      setNotification({ type: 'error', message: err.message || '❌ Erro ao cancelar pedido.' });
+      setTimeout(() => {
+        setNotification(null);
+      }, 5000);
+    }
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen p-8 md:p-12">
@@ -92,17 +108,34 @@ const Dashboard = () => {
           <ul className="space-y-6">
             {orders.map((order) => (
               <li key={order.order_id} className="p-6 bg-white shadow rounded-md space-y-2">
-                <p><strong>📄 ID Pedido:</strong> {order.order_id}</p>
+                <p><strong>📄 ID Pedido:</strong> {order.id_pedido}</p>
                 <p><strong>👤 Cliente:</strong> {order.nome} {order.sobrenome}</p>
                 <p><strong>📧 Email:</strong> {order.user?.email}</p>
-                <p><strong>📞 Telefone:</strong> {order.user?.telefone}</p>
+                <p><strong>📞 Telefone:</strong> {order.celular}</p>
                 {order.endereco && (
                   <p>
-                    <strong>🏠 Endereço:</strong> {order.endereco.rua}, {order.endereco.numero} - {order.endereco.bairro}, {order.endereco.cidade} - {order.endereco.estado}, {order.endereco.cep}
+                    <strong>🏠 Endereço:</strong> {order.endereco.street}, {order.endereco.number} - {order.endereco.neighborhood}, {order.endereco.city} - {order.endereco.state}, {order.endereco.zip_code}, - {order.endereco.complement} -Complemento {order.endereco.reference_point}
                   </p>
                 )}
                 <p><strong>💰 Total:</strong> R$ {order.total_value}</p>
-                <p><strong>📌 Status:</strong> {order.status_do_pedido}</p>
+                <p style={{ marginBottom: "30px" }} ><strong>📌 Status:</strong>
+                  <span style={
+                    {
+                      background:
+                        order.status_do_pedido === 'SOLICITADO' ? '#f0ad4e' :
+                          order.status_do_pedido === 'PENDENTE' ? '#d1100a' :
+                            order.status_do_pedido === 'ANDAMENTO' ? '#5bc0de' :
+                              order.status_do_pedido === 'FINALIZADO' ? '#5cb85c' :
+                                'gray',
+                      borderRadius: "5px",
+                      padding: '5px',
+                      marginLeft: "20px"
+                    }
+                  }>
+                    {order.status_do_pedido}
+                  </span>
+
+                </p>
 
                 <div className="flex gap-2 mt-2">
                   <button
@@ -114,7 +147,7 @@ const Dashboard = () => {
 
                   <button
                     onClick={() => handleCancelOrder(order.order_id)}
-                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                    className="px-4 py-2 bg-red-300 text-white rounded hover:bg-red-700"
                   >
                     ❌ Cancelar Pedido
                   </button>

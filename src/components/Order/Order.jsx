@@ -8,8 +8,6 @@ import { getAddressByUser } from '../../services/service-address';
 import { sendOrder } from '../../services/service-order';
 import { useUser } from '../../contexts/UserContext';
 
-// Constantes e Configurações
-const WHATSAPP_NUMBER = "5521981752434";
 const DELIVERY_FEE = 5; // Taxa de entrega fixa para "delivery"
 
 // Expressão regular para validar o formato do celular
@@ -42,17 +40,19 @@ const Order = () => {
   const [modoEntrega, setModoEntrega] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [infBasicOrder, setInfBasicOrder] = useState(null);
 
   // Carregando os itens do carrinho a partir do localStorage
   const orderLocalHistorage = JSON.parse(localStorage.getItem('cart')) || [];
   const orderPromotionBurger = JSON.parse(localStorage.getItem('promotionBurger')) || [];
   const orderComboBurger = JSON.parse(localStorage.getItem('comboBurger')) || [];
   const orderDrinks = JSON.parse(localStorage.getItem('drinks')) || [];
+  
 
   const navigate = useNavigate();
   
   // Hooks do React Hook Form para lidar com o formulário
-  const { register, handleSubmit, formState: { errors }, reset } = useForm({
+  const { register, handleSubmit, formState: { errors }, reset, getValues } = useForm({
     resolver: zodResolver(orderSchema),
   });
 
@@ -154,6 +154,7 @@ const Order = () => {
   
     const token = localStorage.getItem('authToken');
     sendOrder(order, token);
+
   
     const pedidosExistentes = JSON.parse(localStorage.getItem('pedidos')) || [];
     pedidosExistentes.push(order);
@@ -180,7 +181,17 @@ const Order = () => {
   };
 
   // Função para editar um endereço
-  const handleEditEndereco = () => {
+  const handleEditEndereco = (data) => {
+    // =========================================================== parei aqui: é para guardar as informações do usuário quando ele clicar em editar e voltar para pagina
+    const formValues = getValues();
+    const inforOrder = localStorage.setItem('inforBasicOrder', JSON.stringify({
+      nome: formValues.nome,
+      sobrenome: formValues.sobrenome,
+      email: formValues.email,
+      celular: formValues.celular,
+
+    }));
+    setInfBasicOrder(formValues);
     navigate('/editaddress');
   };
 
@@ -207,6 +218,14 @@ const Order = () => {
     }
   }, [modoEntrega]);
 
+  useEffect(() => {
+    const storedInfo = localStorage.getItem('inforBasicOrder');
+    if (storedInfo) {
+      const data = JSON.parse(storedInfo);
+      console.log(storedInfo)
+      reset(data); // repopula o formulário
+    }
+  }, []);
   // Renderização do componente
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-8">
@@ -350,7 +369,7 @@ const Order = () => {
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleRemoveEndereco(endereco)}
+                          onClick={() => handleSubmit(handleRemoveEndereco(endereco))}
                           className="text-red-600 hover:text-red-800"
                         >
                           Remover

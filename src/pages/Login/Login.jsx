@@ -22,10 +22,10 @@ const Login = () => {
       setTimeout(() => {
         setSuccess('');
         navigate('/'); // Redireciona para a página principal após o login
-      }, 3000);
+      }, 1000);
     } else {
       setError(response.message);
-      setTimeout(() => setError(''), 3000);
+      setTimeout(() => setError(''), 1000);
     }
   };
 

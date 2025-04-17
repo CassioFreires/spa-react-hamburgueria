@@ -1,19 +1,12 @@
-<<<<<<< HEAD
-import React, { useEffect, useState } from 'react';
-=======
 import React, { useState, useEffect } from 'react';
->>>>>>> main
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import generateNotaFiscal from '../../utils/gerenateNotaFiscal';
 import { getAddressByUser } from '../../services/service-address';
-<<<<<<< HEAD
-=======
 import { sendOrder } from '../../services/service-order';
 import { useUser } from '../../contexts/UserContext';
->>>>>>> main
 
 const DELIVERY_FEE = 5; // Taxa de entrega fixa para "delivery"
 
@@ -24,13 +17,6 @@ const phoneRegex = new RegExp(/^\(\d{2}\) \d{4,5}-\d{4}$/);
 const orderSchema = z.object({
   nome: z.string().min(1, 'Campo Nome é obrigatório'),
   sobrenome: z.string().min(1, 'Campo Sobrenome é obrigatório'),
-<<<<<<< HEAD
-  endereco: z.string().min(1, 'Campo Endereço é obrigatório'),
-  bairro: z.string().min(1, 'Campo Bairro é obrigatório'),
-  cep: z.string().min(1, 'Campo Cep é obrigatório'),
-  pagamento: z.string().min(1, 'Escolha uma forma de pagamento'),
-  modoEntrega: z.string().min(1, 'Escolha um modo de entrega'),
-=======
   email: z.string().email({ message: "Formato de email inválido" }),
   celular: z.string().refine((val) => phoneRegex.test(val), {
     message: "Formato de celular inválido (ex: (XX) XXXX-XXXX ou (XX) XXXXX-XXXX)",
@@ -41,7 +27,6 @@ const orderSchema = z.object({
   modoEntrega: z.string().nullable().refine(val => val !== null && val.length > 0, {
     message: 'Escolha um modo de entrega',
   }),
->>>>>>> main
 });
 
 const Order = () => {
@@ -51,15 +36,6 @@ const Order = () => {
   // Estados do componente
   const [notificacao, setNotificacao] = useState('');
   const [taxaEntrega, setTaxaEntrega] = useState(0);
-<<<<<<< HEAD
-  const [address, setAddress] = useState(null);
-  const [modoEntregaSelecionado, setModoEntregaSelecionado] = useState('');
-
-  const navigate = useNavigate();
-  const authToken = localStorage.getItem('authToken');
-
-  // Carregando os carrinhos do localStorage
-=======
   const [enderecos, setEnderecos] = useState([]);
   const [modoEntrega, setModoEntrega] = useState('');
   const [error, setError] = useState('');
@@ -67,101 +43,12 @@ const Order = () => {
   const [infBasicOrder, setInfBasicOrder] = useState(null);
 
   // Carregando os itens do carrinho a partir do localStorage
->>>>>>> main
   const orderLocalHistorage = JSON.parse(localStorage.getItem('cart')) || [];
   const orderPromotionBurger = JSON.parse(localStorage.getItem('promotionBurger')) || [];
   const orderComboBurger = JSON.parse(localStorage.getItem('comboBurger')) || [];
   const orderDrinks = JSON.parse(localStorage.getItem('drinks')) || [];
   
 
-<<<<<<< HEAD
-  // Função para carregar o endereço do usuário
-  const fetchAddress = async () => {
-    const addressData = await getAddressByUser(authToken);
-    setAddress(addressData);
-  };
-
-  useEffect(() => {
-    if (authToken) {
-      console.log(address)
-      fetchAddress();
-    }
-  }, [authToken]);
-
-  // Função para lidar com a mudança no modo de entrega
-  const handleModoEntregaChange = (modo) => {
-    setModoEntregaSelecionado(modo);
-    if (modo === 'delivery') {
-      if (!address) {
-        // Se não houver endereço, redireciona para a página de cadastro de endereço
-        navigate('/address');
-      } else {
-        setTaxaEntrega(5); // Define a taxa de entrega para R$5
-      }
-    } else {
-      setTaxaEntrega(0); // Não há taxa para retirada no balcão
-    }
-  };
-
-  // Função para gerar o link do WhatsApp
-  const generateWhatsappLink = (data) => {
-    const numeroWhatsapp = "5521981752434"; // Número de WhatsApp
-
-    const mensagem = generateNotaFiscal(
-      data.nome,
-      data.sobrenome,
-      data.endereco,
-      data.bairro,
-      data.cep,
-      data.pagamento,
-      data.modoEntrega,
-      taxaEntrega,
-      orderLocalHistorage,
-      orderPromotionBurger,
-      orderComboBurger,
-      orderDrinks
-    );
-
-    const mensagemUrlEncode = encodeURIComponent(mensagem.trim());
-    return `https://wa.me/${numeroWhatsapp}?text=${mensagemUrlEncode}`;
-  };
-
-  const { register, handleSubmit, formState: { errors } } = useForm({
-    resolver: zodResolver(orderSchema),
-  });
-
-  // Função para enviar o pedido
-  const onSubmit = (data) => {
-    if (modoEntregaSelecionado === 'delivery' && !address) {
-      alert("Por favor, cadastre um endereço antes de prosseguir.");
-      return;
-    }
-
-    const orderLink = generateWhatsappLink(data);
-
-    const pedido = {
-      id: new Date().getTime(),
-      nome: data.nome,
-      sobrenome: data.sobrenome,
-      endereco: data.endereco,
-      bairro: data.bairro,
-      cep: data.cep,
-      pagamento: data.pagamento,
-      modoEntrega: data.modoEntrega,
-      taxaEntrega: taxaEntrega,
-      itens: {
-        hamburgueres: orderLocalHistorage,
-        promocao: orderPromotionBurger,
-        combo: orderComboBurger,
-        bebidas: orderDrinks,
-      },
-      status: "Solicitado",
-    };
-
-    const pedidosExistentes = JSON.parse(localStorage.getItem('pedidos')) || [];
-    pedidosExistentes.push(pedido);
-    localStorage.setItem('pedidos', JSON.stringify(pedidosExistentes));
-=======
   const navigate = useNavigate();
   
   // Hooks do React Hook Form para lidar com o formulário
@@ -211,7 +98,6 @@ const Order = () => {
     return `https://wa.me/${celular}?text=${mensagemUrlEncode}`;
   };
   
->>>>>>> main
 
   // Função que é chamada quando o pedido é enviado com sucesso
   const handlePedidoEnviado = (orderLink) => {
@@ -226,9 +112,6 @@ const Order = () => {
     );
   };
 
-<<<<<<< HEAD
-  // Função para voltar à página anterior
-=======
   // Função de submissão do formulário
   const onSubmit = (data) => {
     const orderLink = generateWhatsappLink(data);
@@ -281,7 +164,6 @@ const Order = () => {
   };
   
   // Função para navegar para a página do carrinho
->>>>>>> main
   const handleBack = () => {
     navigate('/cart');
   };
@@ -368,9 +250,6 @@ const Order = () => {
             {errors.nome && <span className="text-red-600">{errors.nome.message}</span>}
           </div>
 
-<<<<<<< HEAD
-          {/* Forma de pagamento */}
-=======
           <div className="mb-4">
             <label className="block text-gray-700" htmlFor="sobrenome">Sobrenome</label>
             <input
@@ -405,7 +284,6 @@ const Order = () => {
           </div>
 
           {/* Forma de Pagamento */}
->>>>>>> main
           <div className="mb-4">
             <label className="block text-gray-700">Forma de Pagamento</label>
             <div className="flex items-center">
@@ -441,7 +319,6 @@ const Order = () => {
                 value="balcao"
                 className="mr-2"
                 onChange={() => handleModoEntregaChange('balcao')}
-                checked={modoEntregaSelecionado === 'balcao'}
               />
               <label htmlFor="delivery" className="mr-4">Delivery</label>
               <input
@@ -451,17 +328,9 @@ const Order = () => {
                 value="delivery"
                 className="mr-2"
                 onChange={() => handleModoEntregaChange('delivery')}
-                checked={modoEntregaSelecionado === 'delivery'}
               />
             </div>
-            {modoEntregaSelecionado === 'delivery' && !address && (
-              <p
-                className="text-blue-600 cursor-pointer mt-1"
-                onClick={() => navigate('/address')}
-              >
-                Você não possui um endereço cadastrado. Clique aqui para cadastrar.
-              </p>
-            )}
+            {errors.modoEntrega && <span className="text-red-600">{errors.modoEntrega.message}</span>}
           </div>
 
           {/* Endereço de entrega */}
@@ -531,43 +400,7 @@ const Order = () => {
             </div>
           )}
 
-<<<<<<< HEAD
-          {/* Exibindo o endereço cadastrado, se houver */}
-          {address && modoEntregaSelecionado === 'delivery' && (
-            <div className="mb-4">
-              <label className="block text-gray-700">Endereço cadastrado</label>
-              <div>
-                <p>{address.street}, {address.number} - {address.neighborhood}</p>
-                <p>{address.city} - {address.state}, {address.zip_code}</p>
-
-                {/* Botões Editar e Remover (só aparecem se houver endereço) */}
-                <div className="mt-4 flex justify-between items-center">
-                  <button
-                    onClick={() => navigate('/address/edit')}
-                    className="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                  >
-                    Editar
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setAddress(null);
-                      setTaxaEntrega(0);
-                      setModoEntregaSelecionado('balcao'); // Muda para retirada no balcão ao remover o endereço
-                    }}
-                    className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-                  >
-                    Remover
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Botão de Enviar Pedido */}
-=======
           {/* Botão de envio do pedido */}
->>>>>>> main
           <button
             type="submit"
             className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 focus:outline-none"

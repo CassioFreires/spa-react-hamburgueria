@@ -1,0 +1,15 @@
+.status.solicitado {
+    background-color: #f0ad4e; /* laranja */
+  }
+  
+  .status.pendente {
+    background-color: #d9534f; /* vermelho */
+  }
+  
+  .status.andamento {
+    background-color: #5bc0de; /* azul */
+  }
+  
+  .status.finalizado {
+    background-color: #5cb85c; /* verde */
+  }

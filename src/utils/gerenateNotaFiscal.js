@@ -1,32 +1,39 @@
 const generateNotaFiscal = (
   nome, 
   sobrenome, 
-  endereco, 
-  bairro, 
-  cep, 
+  endereco = '', 
+  bairro = '', 
+  cep = '', 
+  complemento = '', 
+  referencia = '', 
   pagamento, 
   modoEntrega, 
   taxaEntrega, 
-  orderLocalHistorage,  // Carrinho de hambúrgueres
+  orderLocalHistorage,  
   orderPromotionBurger,
   orderComboBurger,
-  orderDrinks  // Carrinho de promoções
+  orderDrinks  
 ) => {
-  // Combinação de ambos os carrinhos
   const todosItens = [...orderLocalHistorage, ...orderPromotionBurger, ...orderComboBurger, ...orderDrinks];
 
-  // Criação do resumo dos itens
-  const itensPedido = todosItens.map(item => {
-    return `- Nome do item: ${item.name}\n- Valor: R$${parseFloat(item.price).toFixed(2)}`; // Garantir que price seja um número
-  }).join('\n');  // Junta os itens com uma quebra de linha
+  const itensPedido = todosItens.map(item => (
+    `- Nome do item: ${item.name}\n- Valor: R$${parseFloat(item.price).toFixed(2)}`
+  )).join('\n');
 
-  // Cálculo do valor total do pedido
-  const valorTotalPedido = todosItens.reduce((total, item) => total + parseFloat(item.price), 0); // Garantir que price seja um número
-  const valorTotalComTaxa = valorTotalPedido + parseFloat(taxaEntrega); // Garantir que taxaEntrega seja um número
+  const valorTotalPedido = todosItens.reduce((total, item) => total + parseFloat(item.price), 0);
+  const valorTotalComTaxa = valorTotalPedido + parseFloat(taxaEntrega);
 
-  // Formatação dos valores para exibição com 2 casas decimais
   const formattedTotalPedido = valorTotalPedido.toFixed(2);
   const formattedTotalComTaxa = valorTotalComTaxa.toFixed(2);
+
+  const enderecoEntrega = modoEntrega === 'delivery' ? `
+  *ENDEREÇO DE ENTREGA*
+  Endereço: ${endereco}
+  Bairro: ${bairro}
+  CEP: ${cep}
+  Complemento: ${complemento || 'N/A'}
+  Referência: ${referencia || 'N/A'}
+  ----------------------------------` : '';
 
   const mensagem = `
   ========== NOTA FISCAL ==========
@@ -35,14 +42,7 @@ const generateNotaFiscal = (
   Nome: ${nome} ${sobrenome}
   Telefone: (Insira o telefone do cliente)
 
-  ----------------------------------
-
-  *ENDEREÇO DE ENTREGA*
-  Endereço: ${endereco}
-  Bairro: ${bairro}
-  CEP: ${cep}
-
-  ----------------------------------
+  ${enderecoEntrega}
 
   *PEDIDO*
   Forma de Pagamento: ${pagamento === 'cartao' ? 'Cartão' : 'Pix'}

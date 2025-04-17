@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export async function getAllHamburgers() {
-    const url = 'http://localhost:3000/burger/getAll';
+    const url = `${import.meta.env.VITE_BASE_URL_API}:${import.meta.env.VITE_API_PORT}/burger/getAll`;
     try {
         const response = await axios.get(url);
         // Garantir que a estrutura dos dados esteja correta

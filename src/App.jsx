@@ -20,14 +20,8 @@ import Cart from './pages/Cart/Cart';
 import Checkout from './pages/Checkout/Checkout';
 import Login from './pages/Login/Login';
 import Register from './pages/Register/Register';
-<<<<<<< HEAD
-import { UserProvider } from './contexts/UserContext';
-import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
-import Address from './pages/Address/Address';
-=======
 import Address from './pages/Address/Address';
 import EditAddress from './pages/Address/EditAddress';
->>>>>>> main
 
 function App() {
 
@@ -52,19 +46,12 @@ function App() {
               <Route element={<ProtectedRoute requiredRole={['Funcionário', 'Admin']} />}>
                 <Route path="/dashboard" element={<Dashboard />} />
               </Route>
-<<<<<<< HEAD
-              {/* Rota protegida (somente usuários autenticados e com perfil adequado) */}
-              <Route element={<ProtectedRoute requiredRole={['Funcionário', 'Admin', 'Cliente']} />}>
-                <Route path="/address" element={<Address />} />
-              </Route>
-=======
               <Route element={<ProtectedRoute requiredRole={['Funcionário', 'Admin', 'Cliente']} />}>
                 <Route path="/address" element={<Address />} />
               </Route>
               <Route element={<ProtectedRoute requiredRole={['Funcionário', 'Admin', 'Cliente']} />}>
                 <Route path="/editaddress" element={<EditAddress />} />
               </Route>
->>>>>>> main
             </Routes>
           </div>
           <Footer />
